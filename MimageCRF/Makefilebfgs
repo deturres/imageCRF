@@ -1,0 +1,23 @@
+SRC = bfgs.cpp mainlbfgs.cpp
+BIN = mainlbfgs
+
+CC = g++
+
+WARN   = -w #-W -Wall
+#OPT    = -g -DNDEBUG -O3 -funroll-loops --fast-math -mfpmath=sse -msse2
+#OPT    = -O3 -funroll-loops --fast-math  -mfpmath=sse -msse2
+#CPPFLAGS = $(OPT) $(WARN) -I$(MRF) -I../imageLib
+CPPFLAGS = -g $(WARN)
+OBJ = $(SRC:.cpp=.o)
+EXE = $(SRC:.cpp=.exe)
+LDLIBS = -L/usr/lib
+
+all: $(BIN)
+
+mainlbfgs: bfgs.o mainlbfgs.o
+
+clean: 
+	rm -f $(OBJ) core *.stackdump
+
+allclean: clean
+	rm -f $(BIN) $(EXE)

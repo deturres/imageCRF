@@ -1,0 +1,24 @@
+SRC = main.cpp GaussianPyramid.cpp OpticalFlow.cpp Stochastic.cpp
+BIN = opticalflow
+
+CC = g++
+
+WARN   = -w #-W -Wall
+#OPT    = -O2
+#OPT    = -g -DNDEBUG -O3 -funroll-loops --fast-math -mfpmath=sse -msse2
+#OPT    = -O3 -funroll-loops --fast-math  -mfpmath=sse -msse2
+CPPFLAGS = -g $(OPT) $(WARN) -I/Users/chetan/libraries/OpenCV-2.4.3/include/opencv
+OBJ = $(SRC:.cpp=.o)
+EXE = $(SRC:.cpp=.exe)
+
+LDLIBS = -L/Users/chetan/libraries/OpenCV-2.4.3/bin/lib/ -lopencv_core -lopencv_highgui -lopencv_ml
+
+all: $(BIN)
+
+opticalflow: main.o GaussianPyramid.o OpticalFlow.o Stochastic.o
+
+clean:
+	rm -f $(OBJ) core *.stackdump
+
+allclean: clean
+	rm -f $(BIN) $(EXE)

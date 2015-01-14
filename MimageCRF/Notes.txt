@@ -1,0 +1,431 @@
+
+If you use the crf segmentation code for medical images please cite
+
+Bhole, Chetan and Pal, Christopher and Rim, David and Wismüller, Axel (2013) 3D segmentation of abdominal CT imagery with graphical models, conditional random fields and learning. Machine Vision and Applications, pp. 1-25 (Springer Online First Article). 
+
+If you use the crf segmentation code for image or video segmentation, please cite
+Bhole, C. and Pal, C. (2012) Automated Person Segmentation in Videos In the proceedings of ICPR 2012. 
+
+If you use variational message passing, please cite 
+
+Chris Pal, Jerod Weinman and Lam Tran. (2008) Efficiently Learning Random Fields for Stereo Vision with Sparse Message Passing. In proc. European Conf. on Computer Vision (ECCV), Springer-Verlag LNCS, vol. 1, pp. 617-630. 
+
+Bhole, Chetan and Pal, Christopher and Rim, David and Wismüller, Axel (2013) 3D segmentation of abdominal CT imagery with graphical models, conditional random fields and learning. Machine Vision and Applications, pp. 1-25 (Springer Online First Article). 
+
+If you use graph cuts  or maximum product, Please look into the Readme files for additional citation details in the opticalflow
+and MRF2.0 package 
+
+If you use optical flow, please cite : 
+C. Liu. Beyond Pixels: Exploring New Representations and Applications for Motion Analysis. Doctoral Thesis. Massachusetts Institute of Technology. May 2009.
+
+Make sure you look at the licence.txt files in the current package and included folders.
+
+As a design decision for handling unknown regions, only fixed single pairwise parameter is supported.
+Additionally, the computation of empirical distribution and model distribution (counts) is changed.
+The energy computation is done using the entire graph (ie including the unknown regions).
+This means that p(y|x) computation needed in computing the model distribution is done using the complete
+graph. 
+
+
+If onlyUV is enabled, the parameters for Y will still have to be provided in the bXXX file. The only 
+thing is that their values will not be used for any computations. 
+
+
+Difference between the unknown and interactive flags.
+----------------------------------------------------
+
+unknown flag is checked while computing empirical distribution or model distribution and is not used to create the mrf graph.
+These pixels are gray (not black, not white) in the ground truth images.
+(unknown = 1 && interactive == X && trainexample = 1) valid - for train example interactive flag is ignored
+(unknown = 1 && interactive == 0 && trainexample = 1) valid
+(unknown = 1 && interactive == 0 && testexample = 1) valid
+
+
+interactive flag is checked to create the mrf graph only of the nodes labeled as to be computed (black) in the interactive images. The pixels that are white in the interactive map are fixed and their values (foreground or background) are picked from the ground truth images. Note that this flag is ignored while contructing the graph for training images.
+(unknown = 0 && interactive == X && trainexample = 1) valid, interactive ignored for train example
+(unknown = X && interactive == 1 && testexample = 1) valid - dist not computed for test, so unknown ignored
+ 
+
+unknown refers only for the training data case. it means that in the training images, some pixels are unknown, so don't use them for training. It does not change any of the inference related code or the way the graph is organized for the mrf.
+
+interactive however applies to testing. It does not make sense to have interactive for training with unknown = 0 because unknown = 0 will cause empir to be over all nodes in graph and interactive=1 will compute only p(h|y,x) and so the difference will be wrong.
+
+
+
+Further notes:
+h=hidden, u=unknown, i=interactive, tr=train, te=test
+
+a) h=0,u=0, i=0; tr or te
+full graph used, p(y|x) for inference
+
+b) h=0, u=1, i=0, tr
+inference over full graph p(h,y|x)
+but gradient over only pixels of known labels though we use p(h,y|x)
+\hat{f} - \sum p(h,y|x) f
+
+c) h=0, u=1, i=0, te
+inference over full graph p(h,y|x)
+
+d) h=0, u=0, i=1, te
+inference over p(h|y,x)
+
+e) h=1, u=1, i=0, tr (you need interactive images if h==1)
+if h==1, u must also be set to 1
+\hat{f} + \sum p(h|y,x) f - \sum p(h,y|x) f
+first over all known nodes
+second over all unknown nodes
+third over all nodes
+
+f) h=1, u=1, i=0, te
+p(h,y|x) for inference on test example
+
+
+Installing OpenCV and crf package on a mac
+------------------------------------------
+
+Installing the crf package on the mac:
+
+You need to install multiple packages
+
+(you need to install libpng)
+
+to get opencv installed, you need to install lame, faac, faad2
+use the following link
+http://tech.enekochan.com/2012/07/27/install-opencv-2-4-2-with-ffmpeg-support-in-mac-os-x-10-8/
+
+download the opencv tar.gz
+and in the source directory (as mentioned in the link above) change modules/highgui/CMakeLists.txt and add just before 
+if(HAVE_FFMPEG) (on line 158) the following text:
+
+if(APPLE)
+  list(APPEND HIGHGUI_LIBRARIES ${BZIP2_LIBRARIES} -lmp3lame -lfaac -lbz2)
+endif(APPLE)
+
+make sure you install macports
+the port command is installed in /opt/local/bin
+it might not be in the path, so you will need to use the full path while using it
+
+then to install opencv, follow instructions on this page
+http://tilomitra.com/opencv-on-mac-osx/
+
+install cmake the way it is mentioned using port
+and run the commands for opencv
+
+opencv gets installed (after sudo make install) in 
+/Users/chetan/libraries/OpenCV-2.4.3/ 
+
+
+In the crf code, in most of the makefiles, you need to remove the --fast-mat and -mfpmath=sse options since they are not on the mac
+
+Also, openmp include files are not the same on linux and mac, so you need to search where they are. On my mac omp.h was in /usr/lib/gcc/i686-apple-darwin11/4.2.1/include/
+
+
+
+cp libconfig++.9.dylib to /usr/local/lib
+OR
+DYLD_LIBRARY_PATH=/Users/chetan/Documents/NoBackUp/crf/crf/libconfig-1.4.6/lib/.libs/
+export DYLD_LIBRARY_PATH
+echo $DYLD_LIBRARY_PATH
+
+
+
+In compileall.sh need to pass either macosx, linux32 or linux64
+
+In the makefile of crf package
+You need to set the OpenCV and lib (libm) paths correctly
+You need to set the libpng path in crf package but don't need it in MRF. There are errors if you 
+set it in MRF.
+
+
+
+
+
+// Description of the config file with all parameters listed.
+// Some of the parameters are not usable but may be usable in the future.
+
+
+// An example configuration file.
+
+// main Parameters:
+// nD is the number of output classes or labels. It is assumed that all pixels will take the same labels
+nD = 2;
+
+// Leave both these variables outscale8 and outscale16 to -1. They allow scaling the output values
+// so that the image results can be seen with an image viewer.
+// i.e. for a 3 class problem and use of 8bit output, label 0 is translated to 0, label 1 is translated
+// to 127 and label 2 is translated to 255
+outscale8 = -1;
+outscale16 = -1;
+
+// Set verbose to 1 if evaluation metrics and other debug information should be output to the log file.
+verbose = 1;
+
+// This variable is not currently used
+ignoreVal = -1;
+
+// currently, parallelize has been disabled
+parallelize = 0;
+
+// Use timeseq = 0 for 16bit grayscale medical images and timeseq = 1 for RGB images and RGB video frames  
+timeseq = 1;
+
+// Read note of difference of interactive and unknown values above and also look at the examples.
+interactive = 0;
+unknown = 0;
+
+// class weighting options I and II weighting schemes described in the medical imaging paper.
+// option 1 and 2 is only applicable to logistic regression and cannot be used correctly with crf
+optClassAccuracy = 0;
+
+// Set either crfp = 1 (to enable crf) or logreg = 1 (to enable logistic regression) but 
+// do not set both to 1. The pseudolikelihood and pairwise models are currently disabled.
+
+crfparams =
+{
+	crfp = 1;
+
+// Graph cuts (GC), Belief Propagation (BP), Synchronous Belief Propagation (SBP)
+// mean field, variational message passing (MF), Synchronous MF, Tree-reweighted message 
+// passing (TRWS), Max-Prod (MP)
+// Only GC, MF and MP can be used for general graphs
+// USE_GC 0,  USE_BP 1,  USE_SBP 2,  USE_MF 3,  USE_SMF 4, USE_TRWS 5,  USE_BPS 6,  USE_MP 7
+// training inference algorithm
+	inferencer = 0;
+// test inference algorithm	
+	inferencerTest = 0; 
+	
+// random = 1 if you want graph cuts to use randomization	
+	random = 0;			   
+
+// Variational message passing parameters damper and msgTol (message tolerance)
+  damper = 1;
+  msgTol = 0.001;
+
+// There are two loops in general for inference algorithms (mean field algorithms)
+// need to check more details.
+  inferouteriter = 1;
+  inferinneriter = 10;
+
+};
+
+
+logregparams = 
+{
+// enable for logistic regression
+  logreg = 0;
+
+// models below are not yet functional, so always set to 0  
+  logregpair = 0;
+  logregpaird = 0;
+  logregpaird4 = 0;
+  logregpl = 0;
+};
+
+
+ioparams =
+{
+// indirname is the input directory, see example data
+	indirname = "/Users/chetan/Documents/NoBackUp/crf/crf_makeuseful/data/2Dimages/case1/crf/input";
+	
+// gtdirname is the ground truth directory, see example data	
+  gtdirname = "/Users/chetan/Documents/NoBackUp/crf/crf_makeuseful/data/2Dimages/case1/crf/gtruth";
+
+// interdirname is the directory to provide interactive and unknown data maps 
+  interdirname = "/Users/chetan/Documents/NoBackUp/crf/crf_makeuseful/data/2Dimages/case1/crf/intern";
+
+// outdirname is the output directory, see example data  
+  outdirname = "/Users/chetan/Documents/NoBackUp/crf/crf_makeuseful/data/2Dimages/case1/crf_out";
+
+// Leave outstem empty as below. It is automatically set to outdirname as the prefix.  
+  outstem = "";
+
+// Indicates that test directories are present when set to 1. If set to 0, all the folders in the
+// directories will be used to train the model. If set to 1, the program will expect folders with
+// names "test[0-9]+" and those will be used as test folders i.e. they will not be used to as training
+// data.
+  testDir = 0;
+};
+
+
+// The klr code is currently disabled and should not be used
+klrparams =
+{
+  // klr-exp 0, ivm 1, svm 3
+  klrtype = 0; // this will indicate whether the strong classifier is klr-exp, ivm, svm, etc
+
+  klrfName = "";
+
+  appKlr = 0;
+  hogKlr = 0;
+  intensityKlr = 0;
+  locKlr = 0;
+
+  // parameters to control type of model
+  klr = 0;
+
+  // ivm parameters
+  hogdimklr = 0;
+  appdimklr = 0;
+  locdimklr = 0;
+  biasklr = 0;
+  lambda = 0;
+  xfile = "";
+  wfile = "";
+  mmfile = "";
+  kernel = "";
+  p1 = 1.22480611322833476961591259168926626443862915039062;
+//  	ker = "RBF";
+};
+
+
+featureparams =
+{
+// This is a flag to enable/disable generative components.
+// More documentation on this will follow later.
+  generative = 0;
+// This is the main flag to choose the features.
+// The first number enables intensity, second for HOG, third for appearance, fourth for location,
+// fifth for motons, sixth for future use, seventh for pairwise.
+// Use 1 for each of these except for pairwise, use 2. More details will be available in later 
+// documentation.  
+  featureCode = 1000002; 
+  
+// klr features disabled.  
+  featureCodeKlr = 0000000;
+
+// regularization parameters  
+  gaussSigma = 0;
+  
+// bias term  in addition to weights - not been tested well  
+  bias = 0;
+  
+// this factor is disabled.  	
+  nF = 0;
+
+// This is the feature file. See sample files.
+// u - intensity parameter values, v - pairwise parameter values, s - appearance parameter values,
+// l - location parameter values, q - moton parameter values, f - optical parameter values,
+// h - HOG parameter values, d - pairwise parameter values, ...
+// There is one value for each bin for each class.
+// For example if you divide a 8bit gray scale image (range 0-255) into 51 bins (so each bin will have
+// width 5) and 3 classes will have 3*51 -u parameters.
+  fileName = "/Users/chetan/Documents/NoBackUp/crf/crf_makeuseful/data/2Dimages/case1/crf/b1000002.txt";
+
+// More documentation on these variables to follow later  	
+  learngradonly = 0;
+  learncrfonly = 0;
+
+  // smoothness
+  gradOnly = 0;  // to control whether to use non-pairwise or pairwise gradients or only gradients
+  context = 0;
+  gradContext = 0;
+  
+  // Controls the gradient parameters. Use 1 if you are using 2D images (use -v as the parameters).
+  // Use 2 for 3-D volumes with the same -v parameters for all edges of the graph
+  // Use 3 for 3-D volumes (-v for x-y and -d for between images edges)
+	gradVZ = 1;  // 1 for only x-y, 2 for x-y-z (same parameters) and 3 for separate x-y and z parameters
+	
+  // volume feature (to create balancing)
+  nE = 0;
+  volume = 0;
+
+  // intensity
+  // nU will be automatically set depending on number of -u parameters provided 
+  nU = 0;
+  // featuresCode will overwrite enabling the feature flags.
+  // For example, intensity, loc, app, hog, mot, 
+  intensity = 0;
+  nbinsintNB = 0;
+  // Range of color
+	rangeI = 255;
+	// If using Luv in color space, you can neglect L by setting this flag.
+	// Using L usually does not produce good results.
+  onlyUV = 1;
+
+  intfilename = "";
+  intdirname = "";
+
+
+  // location
+
+  loc = 0; // to control whether location should be used in the generative-discriminative setting
+  locCubeSize = 0;
+	loccubex = 0;
+	loccubey = 0;
+	loccubez = 0;
+	skipXYZlocklr = 0;
+  loc_params_movie = 0;  // vestigeal
+  nL = 0;
+
+  locfilename = "";  // for reading in parameters - this could be a directory too
+  locdirname = "";
+	imageSliceFile = "";
+
+
+  // appearance
+
+  app = 0;
+ 
+  appfilename = "";
+  appdirname = "";
+
+
+  // hog
+  hog = 0;
+
+  hogfilename = "";
+  hogdirname = "";
+
+
+	// mot
+  mot = 0;
+  motfilename = "";
+  motdirname = "";
+
+  // optical flow and valid only when model uses edges of graph. The optical flow algorithm is 
+  // run both in the forward and backward direction.
+  opflowconnection = 0;
+  opflowreverseconnection = 0;  
+  
+  // More documents for these variables to follow later.
+  opflowlocal = 0;
+  frames = ( { num  = 4; } //, { num  = 1; }
+          );
+          
+  // The input folder contains a folder cache. If videos are used and optical flow is used to 
+  // connect the frames, the optical flow values can be cached so that if the program is run
+  // with the same input data, the optical flow calculations can be reused by setting the flag
+  // below         
+  useopflowcache = 0;
+  // The names of the optical flow file
+  flowcachefile = "/Users/chetan/Documents/NoBackUp/crf/crf_makeuseful/data/video/2Dimages/case1/crf/cache/flow.dump";
+  rflowcachefile = "/Users/chetan/Documents/NoBackUp/crf/crf_makeuseful/data/video/2Dimages/case1/crf/cache/rflow.dump";
+
+};
+
+
+
+graddescparams =
+{
+// enable either gradient descent or l-bfgs be setting them to 1. Set only one of them, not both. 
+  grad_desc = 1;
+  bfgs_flag = 0;
+
+//???? Common parameters to gradient descent and l-bfgs
+  maxiter_out = 1;
+
+// Gradient descent parameters
+	rate = 1e-3;  
+  maxiter = 9;          // maximum number of iterations for gradient descent
+  closeEnoughPercent = 2.0; // when to stop GC or BP iterations
+
+// l-bfgs parameters
+  bfgs_outer_iter = 20;
+  bfgs_inner_iter = 100;
+ 	m_bfgs = 6; 
+ 	beta = 0.75;
+  beta_dash = 0.25;
+};
+
+
+

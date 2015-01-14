@@ -1,0 +1,4 @@
+#define FLOATTYPE float
+
+FLOATTYPE sumNegLogProb(FLOATTYPE a, FLOATTYPE b);
+FLOATTYPE sumLogProb(FLOATTYPE a, FLOATTYPE b);

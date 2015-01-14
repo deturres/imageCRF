@@ -1,0 +1,29 @@
+lWARN   = -W -Wall
+#CPPFLAGS = -O2 $(WARN)
+# CPPFLAGS = -g $(WARN) ../libpng-1.2.29/.libs/libpng.a
+CPPFLAGS = -g $(WARN)
+#CXX_LDFLAGS = -L../libpng-1.2.29/.libs
+LIBRARIES   = -lpng $(CXX_SYSLIBS)
+#LIBRARIES   = ../libpng-1.2.29/.libs/libpng.a $(CXX_SYSLIBS) 
+
+
+SRC = Convert.cpp Convolve.cpp Image.cpp ImageIO.cpp ImageIOpng.cpp RefCntMem.cpp
+OBJ    = $(SRC:.cpp=.o)
+
+libImg.a: $(OBJ)
+	rm -f libImg.a
+	ar ruc libImg.a $(OBJ)
+	ranlib libImg.a
+
+clean: 
+	rm -f $(OBJ)
+
+allclean: clean
+	rm -f libImg.a
+
+zip:
+	cd .. ;	rm -f imageLib.zip ; zip imageLib.zip \
+	imageLib/README.txt imageLib/Makefile \
+	imageLib/*cpp imageLib/*h \
+	imageLib/imageLib.sln imageLib/imageLib.vcproj \
+	imageLib/lpng/*
