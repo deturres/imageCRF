@@ -1,0 +1,37 @@
+
+  Log Likelihood : 0.000000 
+  Log Likelihood Gen : 0.000000 
+
+ 	 	 Total Training Confusion Matrix 
+		0	1
+	0	0.878	0.122	
+	1	0.074	0.926	
+
+ 	 	 Total Training Dice Coefficients 
+	0.935	0.144	
+
+	860576.0	9568.0	
+
+	756327.0	113817.0	
+
+
+ Total Training Pixel Accuracy : 0.878559 
+
+ Total Training Average Class Accuracy : 0.901915 
+
+ 	 	 Total Test Confusion Matrix 
+		0	1
+	0	0.000	0.000	
+	1	0.000	0.000	
+
+ 	 	 Total Test Dice Coefficients 
+	0.000	0.000	
+
+	0.0	0.0	
+
+	0.0	0.0	
+
+
+ Total Testing Pixel Accuracy : 0 
+
+ Total Testing Average Class Accuracy : 1 

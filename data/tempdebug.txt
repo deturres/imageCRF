@@ -1,0 +1,189 @@
+Creating Graph Cuts / Expansion
+Energy = -51590.941406 (Ed=-54057.5, Es=2466.58) at start
+Energy = -52024.937500 (Ed=-53572.8, Es=1547.84), 0.032 secs, 0.841% decrease
+Creating Graph Cuts / Expansion
+Energy = -52192.796875 (Ed=-54691.9, Es=2499.07) at start
+Energy = -52862.640625 (Ed=-54244.9, Es=1382.29), 0.035 secs, 1.283% decrease
+Creating Graph Cuts / Expansion
+Energy = -47806.296875 (Ed=-50820.8, Es=3014.54) at start
+Energy = -48344.515625 (Ed=-50205.3, Es=1860.81), 0.033 secs, 1.126% decrease
+Creating Graph Cuts / Expansion
+Energy = -52009.398438 (Ed=-54455, Es=2445.59) at start
+Energy = -52442.332031 (Ed=-54086.8, Es=1644.51), 0.028 secs, 0.832% decrease
+Creating Graph Cuts / Expansion
+Energy = -51253.945312 (Ed=-54014.5, Es=2760.56) at start
+Energy = -52049.445312 (Ed=-53358.2, Es=1308.79), 0.033 secs, 1.552% decrease
+Creating Graph Cuts / Expansion
+Energy = -49153.628906 (Ed=-52376.6, Es=3222.96) at start
+Energy = -50141.726562 (Ed=-51674.1, Es=1532.42), 0.033 secs, 2.010% decrease
+Creating Graph Cuts / Expansion
+Energy = -48512.972656 (Ed=-51369.9, Es=2856.94) at start
+Energy = -49269.367188 (Ed=-50900.2, Es=1630.86), 0.033 secs, 1.559% decrease
+Creating Graph Cuts / Expansion
+Energy = -34264.468750 (Ed=-42200.9, Es=7936.45) at start
+Energy = -45949.468750 (Ed=-47660.4, Es=1710.96), 0.042 secs, 34.102% decrease
+Creating Graph Cuts / Expansion
+Energy = -36790.183594 (Ed=-43877.8, Es=7087.58) at start
+Energy = -47506.164062 (Ed=-49305.3, Es=1799.18), 0.046 secs, 29.127% decrease
+Creating Graph Cuts / Expansion
+Energy = -27390.871094 (Ed=-36932, Es=9541.17) at start
+Energy = -41261.519531 (Ed=-42971, Es=1709.45), 0.050 secs, 50.640% decrease
+Creating Graph Cuts / Expansion
+Energy = -36080.906250 (Ed=-44513, Es=8432.1) at start
+Energy = -46748.835938 (Ed=-48349.2, Es=1600.38), 0.048 secs, 29.567% decrease
+Creating Graph Cuts / Expansion
+Energy = -36423.972656 (Ed=-43134.7, Es=6710.71) at start
+Energy = -45967.968750 (Ed=-47681.1, Es=1713.08), 0.047 secs, 26.203% decrease
+Creating Graph Cuts / Expansion
+Energy = -33141.636719 (Ed=-40999, Es=7857.39) at start
+Energy = -44024.867188 (Ed=-45661.4, Es=1636.49), 0.048 secs, 32.839% decrease
+Creating Graph Cuts / Expansion
+Energy = -30138.181641 (Ed=-38500.3, Es=8362.1) at start
+Energy = -41850.222656 (Ed=-43401.3, Es=1551.11), 0.057 secs, 38.861% decrease
+Creating Graph Cuts / Expansion
+Energy = -42444.253906 (Ed=-42779.3, Es=335.064) at start
+Energy = -52007.175781 (Ed=-53561.4, Es=1554.23), 0.036 secs, 22.531% decrease
+Creating Graph Cuts / Expansion
+Energy = -42988.429688 (Ed=-43340.8, Es=352.341) at start
+Energy = -52846.570312 (Ed=-54234.6, Es=1387.99), 0.037 secs, 22.932% decrease
+Creating Graph Cuts / Expansion
+Energy = -36014.058594 (Ed=-36348.8, Es=334.769) at start
+Energy = -48323.562500 (Ed=-50192.1, Es=1868.49), 0.036 secs, 34.180% decrease
+Creating Graph Cuts / Expansion
+Energy = -43696.988281 (Ed=-44010.4, Es=313.409) at start
+Energy = -52425.968750 (Ed=-54077.3, Es=1651.3), 0.034 secs, 19.976% decrease
+Creating Graph Cuts / Expansion
+Energy = -41187.593750 (Ed=-41523.1, Es=335.48) at start
+Energy = -52033.835938 (Ed=-53344.2, Es=1310.4), 0.034 secs, 26.334% decrease
+Creating Graph Cuts / Expansion
+Energy = -40145.574219 (Ed=-40466.1, Es=320.481) at start
+Energy = -50124.730469 (Ed=-51663.5, Es=1538.75), 0.033 secs, 24.857% decrease
+Creating Graph Cuts / Expansion
+Energy = -36944.769531 (Ed=-37248.5, Es=303.761) at start
+Energy = -49250.242188 (Ed=-50884.9, Es=1634.68), 0.033 secs, 33.308% decrease
+Creating Graph Cuts / Expansion
+Energy = -42686.511719 (Ed=-47591.7, Es=4905.18) at start
+Energy = -46239.558594 (Ed=-47630.5, Es=1390.95), 0.040 secs, 8.324% decrease
+Creating Graph Cuts / Expansion
+Energy = -44411.660156 (Ed=-48792.2, Es=4380.53) at start
+Energy = -47162.222656 (Ed=-48340.4, Es=1178.16), 0.039 secs, 6.193% decrease
+Creating Graph Cuts / Expansion
+Energy = -37327.457031 (Ed=-43224.4, Es=5896.99) at start
+Energy = -41161.054688 (Ed=-42483.1, Es=1322.08), 0.048 secs, 10.270% decrease
+Creating Graph Cuts / Expansion
+Energy = -43839.890625 (Ed=-49051.4, Es=5211.52) at start
+Energy = -46880.171875 (Ed=-48342.1, Es=1461.96), 0.043 secs, 6.935% decrease
+Creating Graph Cuts / Expansion
+Energy = -43843.007812 (Ed=-47978.6, Es=4135.64) at start
+Energy = -46200.035156 (Ed=-47295.5, Es=1095.51), 0.043 secs, 5.376% decrease
+Creating Graph Cuts / Expansion
+Energy = -41203.003906 (Ed=-46059.3, Es=4856.32) at start
+Energy = -44166.457031 (Ed=-45414.6, Es=1248.17), 0.040 secs, 7.192% decrease
+Creating Graph Cuts / Expansion
+Energy = -39217.226562 (Ed=-44376.3, Es=5159.08) at start
+Energy = -42409.191406 (Ed=-43845.4, Es=1436.2), 0.043 secs, 8.139% decrease
+Creating Graph Cuts / Expansion
+Energy = -45761.601562 (Ed=-46777.9, Es=1016.3) at start
+Energy = -45947.445312 (Ed=-47189.8, Es=1242.31), 0.037 secs, 0.406% decrease
+Creating Graph Cuts / Expansion
+Energy = -46895.468750 (Ed=-47756.3, Es=860.83) at start
+Energy = -47117.984375 (Ed=-48308.6, Es=1190.58), 0.036 secs, 0.474% decrease
+Creating Graph Cuts / Expansion
+Energy = -40665.199219 (Ed=-41631.2, Es=965.988) at start
+Energy = -40979.183594 (Ed=-42597.9, Es=1618.76), 0.039 secs, 0.772% decrease
+Creating Graph Cuts / Expansion
+Energy = -46584.023438 (Ed=-47652.2, Es=1068.19) at start
+Energy = -46894.417969 (Ed=-48299.6, Es=1405.21), 0.037 secs, 0.666% decrease
+Creating Graph Cuts / Expansion
+Energy = -45796.726562 (Ed=-46597.2, Es=800.441) at start
+Energy = -46136.078125 (Ed=-47284, Es=1147.92), 0.037 secs, 0.741% decrease
+Creating Graph Cuts / Expansion
+Energy = -43852.324219 (Ed=-44764.3, Es=911.984) at start
+Energy = -44197.746094 (Ed=-45442.2, Es=1244.48), 0.034 secs, 0.788% decrease
+Creating Graph Cuts / Expansion
+Energy = -42507.945312 (Ed=-43557.3, Es=1049.37) at start
+Energy = -42644.871094 (Ed=-43840.3, Es=1195.45), 0.035 secs, 0.322% decrease
+Creating Graph Cuts / Expansion
+Energy = -46046.000000 (Ed=-47745.8, Es=1699.81) at start
+Energy = -46239.082031 (Ed=-47629.7, Es=1390.57), 0.038 secs, 0.419% decrease
+Creating Graph Cuts / Expansion
+Energy = -46830.816406 (Ed=-48459.8, Es=1629.03) at start
+Energy = -47161.953125 (Ed=-48339.8, Es=1177.84), 0.039 secs, 0.707% decrease
+Creating Graph Cuts / Expansion
+Energy = -40623.839844 (Ed=-42838.7, Es=2214.89) at start
+Energy = -41160.558594 (Ed=-42482.3, Es=1321.73), 0.044 secs, 1.321% decrease
+Creating Graph Cuts / Expansion
+Energy = -46346.519531 (Ed=-48269.2, Es=1922.7) at start
+Energy = -46879.878906 (Ed=-48341.4, Es=1461.56), 0.040 secs, 1.151% decrease
+Creating Graph Cuts / Expansion
+Energy = -45894.246094 (Ed=-47464.9, Es=1570.65) at start
+Energy = -46199.628906 (Ed=-47294.8, Es=1095.21), 0.041 secs, 0.665% decrease
+Creating Graph Cuts / Expansion
+Energy = -44004.730469 (Ed=-45707.5, Es=1702.78) at start
+Energy = -44166.144531 (Ed=-45414, Es=1247.83), 0.035 secs, 0.367% decrease
+Creating Graph Cuts / Expansion
+Energy = -42325.953125 (Ed=-43961.6, Es=1635.69) at start
+Energy = -42409.292969 (Ed=-43845.1, Es=1435.81), 0.039 secs, 0.197% decrease
+Creating Graph Cuts / Expansion
+Energy = -45812.503906 (Ed=-46868.7, Es=1056.2) at start
+Energy = -45959.351562 (Ed=-47226.9, Es=1267.56), 0.039 secs, 0.321% decrease
+Creating Graph Cuts / Expansion
+Energy = -46923.882812 (Ed=-47818.5, Es=894.626) at start
+Energy = -47089.613281 (Ed=-48268.9, Es=1179.25), 0.037 secs, 0.353% decrease
+Creating Graph Cuts / Expansion
+Energy = -40718.011719 (Ed=-41721.9, Es=1003.91) at start
+Energy = -40944.375000 (Ed=-42602.8, Es=1658.44), 0.039 secs, 0.556% decrease
+Creating Graph Cuts / Expansion
+Energy = -46615.562500 (Ed=-47725.7, Es=1110.12) at start
+Energy = -46857.847656 (Ed=-48155.2, Es=1297.39), 0.034 secs, 0.520% decrease
+Creating Graph Cuts / Expansion
+Energy = -45839.679688 (Ed=-46671.5, Es=831.866) at start
+Energy = -46110.953125 (Ed=-47292.7, Es=1181.78), 0.038 secs, 0.592% decrease
+Creating Graph Cuts / Expansion
+Energy = -43885.777344 (Ed=-44833.6, Es=947.787) at start
+Energy = -44178.363281 (Ed=-45443.9, Es=1265.56), 0.035 secs, 0.667% decrease
+Creating Graph Cuts / Expansion
+Energy = -42497.429688 (Ed=-43588, Es=1090.57) at start
+Energy = -42612.476562 (Ed=-43810.4, Es=1197.94), 0.036 secs, 0.271% decrease
+Creating Graph Cuts / Expansion
+Energy = -46068.238281 (Ed=-47736.7, Es=1668.43) at start
+Energy = -46238.656250 (Ed=-47628.9, Es=1390.24), 0.038 secs, 0.370% decrease
+Creating Graph Cuts / Expansion
+Energy = -46907.875000 (Ed=-48460.1, Es=1552.2) at start
+Energy = -47161.718750 (Ed=-48339.3, Es=1177.56), 0.036 secs, 0.541% decrease
+Creating Graph Cuts / Expansion
+Energy = -40670.964844 (Ed=-42853.9, Es=2182.94) at start
+Energy = -41160.121094 (Ed=-42481.5, Es=1321.41), 0.047 secs, 1.203% decrease
+Creating Graph Cuts / Expansion
+Energy = -46607.433594 (Ed=-48315.1, Es=1707.71) at start
+Energy = -46879.613281 (Ed=-48340.8, Es=1461.21), 0.040 secs, 0.584% decrease
+Creating Graph Cuts / Expansion
+Energy = -45905.328125 (Ed=-47460.9, Es=1555.53) at start
+Energy = -46199.265625 (Ed=-47294.2, Es=1094.95), 0.041 secs, 0.640% decrease
+Creating Graph Cuts / Expansion
+Energy = -44027.917969 (Ed=-45693.7, Es=1665.8) at start
+Energy = -44165.863281 (Ed=-45413.4, Es=1247.53), 0.037 secs, 0.313% decrease
+Creating Graph Cuts / Expansion
+Energy = -42343.945312 (Ed=-43920.7, Es=1576.8) at start
+Energy = -42409.378906 (Ed=-43844.8, Es=1435.47), 0.038 secs, 0.155% decrease
+Creating Graph Cuts / Expansion
+Energy = -45857.937500 (Ed=-46949.8, Es=1091.81) at start
+Energy = -45971.074219 (Ed=-47295.9, Es=1324.86), 0.033 secs, 0.247% decrease
+Creating Graph Cuts / Expansion
+Energy = -46949.234375 (Ed=-47874, Es=924.789) at start
+Energy = -47086.296875 (Ed=-48157.6, Es=1071.34), 0.038 secs, 0.292% decrease
+Creating Graph Cuts / Expansion
+Energy = -40765.140625 (Ed=-41802.9, Es=1037.76) at start
+Energy = -40917.605469 (Ed=-42602.7, Es=1685.13), 0.043 secs, 0.374% decrease
+Creating Graph Cuts / Expansion
+Energy = -46643.714844 (Ed=-47791.3, Es=1147.55) at start
+Energy = -46834.406250 (Ed=-48111.4, Es=1277.03), 0.035 secs, 0.409% decrease
+Creating Graph Cuts / Expansion
+Energy = -45878.011719 (Ed=-46737.9, Es=859.913) at start
+Energy = -46095.339844 (Ed=-47256.1, Es=1160.81), 0.034 secs, 0.474% decrease
+Creating Graph Cuts / Expansion
+Energy = -43915.640625 (Ed=-44895.4, Es=979.742) at start
+Energy = -44162.699219 (Ed=-45463.6, Es=1300.91), 0.035 secs, 0.563% decrease
+Creating Graph Cuts / Expansion
+Energy = -42488.039062 (Ed=-43615.4, Es=1127.34) at start
+Energy = -42584.062500 (Ed=-43815.9, Es=1231.79), 0.036 secs, 0.226% decrease
