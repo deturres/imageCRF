@@ -635,12 +635,12 @@ configure:15379: checking lex output file root
 configure:15393: result: lex.yy
 configure:15398: checking lex library
 configure:15412: gcc -o conftest -g -O2   conftest.c   >&5
-/tmp/cczuneTG.o: In function `input':
-/home/deturres/source/CRF_implementations/imageCRF.v1.0/libconfig-1.4.6/lex.yy.c:1182: undefined reference to `yywrap'
-/tmp/cczuneTG.o: In function `yylex':
-/home/deturres/source/CRF_implementations/imageCRF.v1.0/libconfig-1.4.6/lex.yy.c:881: undefined reference to `yywrap'
-/tmp/cczuneTG.o: In function `main':
-/home/deturres/source/CRF_implementations/imageCRF.v1.0/libconfig-1.4.6/conftest.l:17: undefined reference to `yywrap'
+/tmp/ccd5Osed.o: In function `input':
+/home/deturres/source/CRF_implementations/imageCRF/MimageCRF/libconfig-1.4.6/lex.yy.c:1182: undefined reference to `yywrap'
+/tmp/ccd5Osed.o: In function `yylex':
+/home/deturres/source/CRF_implementations/imageCRF/MimageCRF/libconfig-1.4.6/lex.yy.c:881: undefined reference to `yywrap'
+/tmp/ccd5Osed.o: In function `main':
+/home/deturres/source/CRF_implementations/imageCRF/MimageCRF/libconfig-1.4.6/conftest.l:17: undefined reference to `yywrap'
 collect2: error: ld returned 1 exit status
 configure:15412: $? = 1
 configure: failed program was:
@@ -2538,6 +2538,7 @@ config.status:1173: creating tinytest/Makefile
 config.status:1173: creating tests/Makefile
 config.status:1173: creating libconfig.spec
 config.status:1173: creating ac_config.h
+config.status:1345: ac_config.h is unchanged
 config.status:1393: executing depfiles commands
 config.status:1393: executing libtool commands
 
@@ -2655,16 +2656,16 @@ lt_cv_sys_max_cmd_len=1572864
 ## Output variables. ##
 ## ----------------- ##
 
-ACLOCAL='${SHELL} /home/deturres/source/CRF_implementations/imageCRF.v1.0/libconfig-1.4.6/aux-build/missing --run aclocal-1.11'
+ACLOCAL='${SHELL} /home/deturres/source/CRF_implementations/imageCRF/MimageCRF/libconfig-1.4.6/aux-build/missing --run aclocal-1.11'
 AMDEPBACKSLASH='\'
 AMDEP_FALSE='#'
 AMDEP_TRUE=''
-AMTAR='${SHELL} /home/deturres/source/CRF_implementations/imageCRF.v1.0/libconfig-1.4.6/aux-build/missing --run tar'
+AMTAR='${SHELL} /home/deturres/source/CRF_implementations/imageCRF/MimageCRF/libconfig-1.4.6/aux-build/missing --run tar'
 AR='ar'
 AS='as'
-AUTOCONF='${SHELL} /home/deturres/source/CRF_implementations/imageCRF.v1.0/libconfig-1.4.6/aux-build/missing --run autoconf'
-AUTOHEADER='${SHELL} /home/deturres/source/CRF_implementations/imageCRF.v1.0/libconfig-1.4.6/aux-build/missing --run autoheader'
-AUTOMAKE='${SHELL} /home/deturres/source/CRF_implementations/imageCRF.v1.0/libconfig-1.4.6/aux-build/missing --run automake-1.11'
+AUTOCONF='${SHELL} /home/deturres/source/CRF_implementations/imageCRF/MimageCRF/libconfig-1.4.6/aux-build/missing --run autoconf'
+AUTOHEADER='${SHELL} /home/deturres/source/CRF_implementations/imageCRF/MimageCRF/libconfig-1.4.6/aux-build/missing --run autoheader'
+AUTOMAKE='${SHELL} /home/deturres/source/CRF_implementations/imageCRF/MimageCRF/libconfig-1.4.6/aux-build/missing --run automake-1.11'
 AWK='gawk'
 BUILDCXX_FALSE='#'
 BUILDCXX_TRUE=''
@@ -2709,7 +2710,7 @@ LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 LIPO=''
 LN_S='ln -s'
 LTLIBOBJS=''
-MAKEINFO='${SHELL} /home/deturres/source/CRF_implementations/imageCRF.v1.0/libconfig-1.4.6/aux-build/missing --run makeinfo'
+MAKEINFO='${SHELL} /home/deturres/source/CRF_implementations/imageCRF/MimageCRF/libconfig-1.4.6/aux-build/missing --run makeinfo'
 MKDIR_P='/bin/mkdir -p'
 NM='/usr/bin/nm -B'
 NMEDIT=''
@@ -2767,7 +2768,7 @@ host_vendor='unknown'
 htmldir='${docdir}'
 includedir='${prefix}/include'
 infodir='${datarootdir}/info'
-install_sh='${SHELL} /home/deturres/source/CRF_implementations/imageCRF.v1.0/libconfig-1.4.6/aux-build/install-sh'
+install_sh='${SHELL} /home/deturres/source/CRF_implementations/imageCRF/MimageCRF/libconfig-1.4.6/aux-build/install-sh'
 libdir='${exec_prefix}/lib'
 libexecdir='${exec_prefix}/libexec'
 localedir='${datarootdir}/locale'

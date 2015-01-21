@@ -15,6 +15,9 @@
 #include <string>
 #include "common.h"
 
+#include <unistd.h>
+//#include <getopt.h>
+
 #include <libconfig.h++>
 using namespace libconfig;
 
