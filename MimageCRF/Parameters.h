@@ -2,6 +2,7 @@
 #define PARAMETERS_FILE
 
 #include <stdio.h>
+#include <unistd.h>
 #include <vector>
 #include <map>
 #include <fstream>
