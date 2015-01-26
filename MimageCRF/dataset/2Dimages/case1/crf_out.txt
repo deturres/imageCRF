@@ -1749,7 +1749,7 @@ rms diffDist    2555.4
  reldiff = 27.0202 23.4371
 
  speed up learning rate = 0.000578812 
- Iteration : 3  Time : 6.000000 
+ Iteration : 3  Time : 5.000000 
 
 
  Iteration : 4   Image No: 0 
@@ -2185,7 +2185,7 @@ diffDist      : (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 rms diffDist    1900.5
 
  backing up learning rate = 0.000491991
- Iteration : 4  Time : 7.000000 
+ Iteration : 4  Time : 6.000000 
 
 
  Iteration : 5   Image No: 0 
@@ -2623,7 +2623,7 @@ rms diffDist    2555.4
  reldiff = 23.4371 23.4371
 
  speed up learning rate = 0.00051659 
- Iteration : 5  Time : 9.000000 
+ Iteration : 5  Time : 8.000000 
 
 
  Iteration : 6   Image No: 0 
@@ -3059,7 +3059,7 @@ diffDist      : (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 rms diffDist    1801.51
 
  backing up learning rate = 0.000439102
- Iteration : 6  Time : 10.000000 
+ Iteration : 6  Time : 9.000000 
 
 
  Iteration : 7   Image No: 0 
@@ -3497,7 +3497,7 @@ rms diffDist    2555.4
  reldiff = 23.4371 23.4371
 
  speed up learning rate = 0.000461057 
- Iteration : 7  Time : 11.000000 
+ Iteration : 7  Time : 10.000000 
 
 
  Iteration : 8   Image No: 0 
@@ -3927,7 +3927,7 @@ rms diffDist    2555.4
 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 
 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 -u 0 
 -v 2.48752 
- Iteration : 8  Time : 13.000000 
+ Iteration : 8  Time : 12.000000 
 
  	 	 Ground Truth Pixel Counts 
 
