@@ -1,7 +1,7 @@
 function MCRF_binarydenoising
 
 % parameters of the problem
-N     = 1; % number of training images
+N     = 7; % number of training images
 siz   = 50; % size of training images
 rho   = .5; % TRW edge appearance probability
 nvals = 2; % this problem is binary
@@ -20,30 +20,33 @@ for n=1:N
     
 end
 
-% make features and labels. The features consist of simply the input image
-% y itslef  and a constant of one.
+% make features and labels. The features consist of simply the input image y itslef and a constant of one.
 for n=1:N
     feats{n}  = [y{n}(:) 1+0*x{n}(:)];
     labels{n} = x{n}+1;
 end
 
-% no edge features here  ??
+% no edge features here (smootheness of the result)
 efeats = []; % none
 
     % visualization function.
     % This takes a cell array of predicted beliefs as input, and shows them to the screen during training. 
-    % This is totally optional, but very useful if you want to understand what is happening in your training run.
     function viz(b_i)
         % here, b_i is a cell array of size nvals X nvars
         for n=1:N
             subplot(3,N,n    ); imshow(reshape(b_i{n}(2,:),siz,siz));
+            title('predicted belief');
             subplot(3,N,n+  N); imshow(reshape(feats{n}(:,1),siz,siz));
+            title('input noisy image');
             subplot(3,N,n+2*N); imshow(reshape(labels{n}-1,siz,siz));
+            title('label');
             
         end
         xlabel('top: marginals  middle: input  bottom: labels')
         drawnow
     end
+
+%-----------------training----------------%
 
 % We pick a string to specify the loss and inference method. In this case, we choose truncated fitting with the clique logistic loss based on TRW with five iterations.
 % Other options include 'pert_ul_trw_1e5' (perturbation, univariate logistic loss, TRW, threshold of 1e-5),
@@ -70,10 +73,10 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 
 
 %-----------------testing----------------%
+
 % Now that we've trained the image, let's make a new test image, and get example marginals for it.
 % make a test image
 x = round(imfilter(rand(siz),fspecial('gaussian',50,7),'same','symmetric'));
-% extremely difficult noise pattern -- from perturbation paper
 t = rand(size(x));
 y = x.*(1-t.^noiselevel) + (1-x).*t.^noiselevel; 
 feats  = [y(:) 1+0*x(:)];

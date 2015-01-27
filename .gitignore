@@ -3,4 +3,7 @@
 *.user
 *.o
 *.a
-
+*.creator
+*.includes
+../../MimageCRF/MimageCRF++.config
+../../MimageCRF/MimageCRF++.files
