@@ -1,22 +1,44 @@
 function MCRF_binarydenoising
 
+% to load your own pattern data
+traindir = './Dataset/fakeData/train';
+train_names = dir([traindir '*.jpg']);
+
 % parameters of the problem
-N     = 7; % number of training images
-siz   = 50; % size of training images
+N     = length(train_names);  % size of training images
+x     = cell(N,1);
+% N     = 4;  % size of training images random generated
+% siz   = 50; % size of training images random generated
+
 rho   = .5; % TRW edge appearance probability
 nvals = 2; % this problem is binary
 
-% make a graph for this CRF. (A simple pairwise grid)
-model = gridmodel(siz,siz,nvals);
+
+% % make a graph for this CRF. (A simple pairwise grid)
+% model = gridmodel(siz,siz,nvals);
 
 % make a bunch of data. Basically, we make noisy images, then smooth them to make the true (discrete) output values, and then add noise to make the input.
 for n=1:N
     
-    x{n} = round(imfilter(rand(siz),fspecial('gaussian',50,7),'same','symmetric')); % true label x
+    % load your own data as true label x, add noise to create the input y
+    img = double(imread(([traindir train_names(n).name])))/255;
+    x{n}  = img; % true label x
+    
+    % random generate data
+%     x{n} = round(imfilter(rand(siz),fspecial('gaussian',50,7),'same','symmetric')); % true label x
+    
     % extremely difficult noise pattern -- from perturbation paper
     t = rand(size(x{n}));
     noiselevel = 1.25; % in perturbation paper 1.25
-    y{n} = x{n}.*(1-t.^noiselevel) + (1-x{n}).*t.^noiselevel; % noisy input y
+    
+    
+    
+    
+    % TODO CREATE NOISY INPUT FROM THE IMAGE TRUE LABEL LOADED
+    % y{n} = x{n}.*(1-t.^noiselevel) + (1-x{n}).*t.^noiselevel; % noisy input y
+    
+    
+    
     
 end
 
@@ -28,6 +50,10 @@ end
 
 % no edge features here (smootheness of the result)
 efeats = []; % none
+
+% make a graph for this CRF. (A simple pairwise grid)
+siz = length(x{1});
+model = gridmodel(siz,siz,nvals);
 
     % visualization function.
     % This takes a cell array of predicted beliefs as input, and shows them to the screen during training. 

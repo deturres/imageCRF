@@ -1,7 +1,7 @@
 function MCRF_backgrounds
 
-imsdir = './Datasets/iccv09Data/images/'; % Change this to fit your system!
-labdir = './Datasets/iccv09Data/labels/'; % Change this to fit your system!
+imsdir = './Dataset/iccv09Data/images/'; % Change this to fit your system!
+labdir = './Dataset/iccv09Data/labels/'; % Change this to fit your system!
 nvals  = 8;
 rez    = .2; % how much to reduce resolution
 rho    = .5; % (1 = loopy belief propagation) (.5 = tree-reweighted belief propagation)
