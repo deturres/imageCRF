@@ -1,12 +1,11 @@
 function MCRF_binarydenoising
 
 % to load your own pattern data
-traindir = './Dataset/fakeData/train';
+traindir = './Dataset/fakeData/train/';
 train_names = dir([traindir '*.jpg']);
 
 % parameters of the problem
 N     = length(train_names);  % size of training images
-x     = cell(N,1);
 % N     = 4;  % size of training images random generated
 % siz   = 50; % size of training images random generated
 
@@ -18,30 +17,25 @@ nvals = 2; % this problem is binary
 % model = gridmodel(siz,siz,nvals);
 
 % make a bunch of data. Basically, we make noisy images, then smooth them to make the true (discrete) output values, and then add noise to make the input.
+x = cell(1,N);
 for n=1:N
     
-    % load your own data as true label x, add noise to create the input y
-    img = double(imread(([traindir train_names(n).name])))/255;
-    x{n}  = img; % true label x
-    
     % random generate data
-%     x{n} = round(imfilter(rand(siz),fspecial('gaussian',50,7),'same','symmetric')); % true label x
+    % x{n} = round(imfilter(rand(siz),fspecial('gaussian',50,7),'same','symmetric')); % true label x
+    
+    % load your own data as true label x, add noise to create the input y
+    I = double(imread(([traindir train_names(n).name])));
+    img = rgb2gray(I);
+    x{n}  = round(img); % true label x
+    imshow(x{n})
     
     % extremely difficult noise pattern -- from perturbation paper
     t = rand(size(x{n}));
     noiselevel = 1.25; % in perturbation paper 1.25
-    
-    
-    
-    
-    % TODO CREATE NOISY INPUT FROM THE IMAGE TRUE LABEL LOADED
-    % y{n} = x{n}.*(1-t.^noiselevel) + (1-x{n}).*t.^noiselevel; % noisy input y
-    
-    
-    
+    y{n} = x{n}.*(1-t.^noiselevel) + (1-x{n}).*t.^noiselevel; % noisy input y
     
 end
-
+%%
 % make features and labels. The features consist of simply the input image y itslef and a constant of one.
 for n=1:N
     feats{n}  = [y{n}(:) 1+0*x{n}(:)];
