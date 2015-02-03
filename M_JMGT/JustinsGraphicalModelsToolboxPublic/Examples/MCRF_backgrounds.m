@@ -2,7 +2,7 @@ function MCRF_backgrounds
 
 imsdir = './Dataset/iccv09Data/images/'; % Change this to fit your system!
 labdir = './Dataset/iccv09Data/labels/'; % Change this to fit your system!
-nvals  = 8;
+nvals  = 8; % number of class label
 rez    = .2; % how much to reduce resolution
 rho    = .5; % (1 = loopy belief propagation) (.5 = tree-reweighted belief propagation)
 
@@ -41,7 +41,7 @@ parfor n=1:N
     feats{n} = reshape(feats{n},ly*lx,lz);
 end 
 
-%%
+
 % the images come in slightly different sizes, so we need to make many models
 % use a "hashing" strategy to not rebuild.  Start with empty giant array
 model_hash = repmat({[]},1000,1000);
@@ -99,7 +99,7 @@ models_test  = models(who_test);
         xlabel('top: marginals  middle: input  bottom: labels')
         drawnow
     end
-%%
+
 fprintf('training the model (this is slow!)...\n')
 loss_spec = 'trunc_cl_trwpll_5';
 crf_type  = 'linear_linear';
@@ -120,7 +120,7 @@ save p p
 
 
 fprintf('get the marginals for test images...\n');
-close all
+% close all
 for n=1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
     
@@ -166,51 +166,51 @@ cmap = [.5  .5  .5;
         
 % takes about .62s to compute features and 
 % .72s to compue marginals
-   
-%%
+
+
 % for fun, run on a video
-clf
-vid_read  = VideoReader('~/Datasets/georgetown_driving.mp4');
-vid_write = VideoWriter('marginals'); open(vid_write);
-for i=1:3:vid_read.NumberOfFrames/2,
-    % load data, make features, etc.
-    im0   = double(read(vid_read,i))/255;
-    feats = featurize_im(im0,feat_params);
-    img    = imresize(im0,.2,'bilinear');
-    feats = imresize(feats,.2,'bilinear');
-    [ly lx lz] = size(feats);
-    feats = reshape(feats,ly*lx,lz);
-    if i==1
-        [ly lx lz] = size(img);
-        model = gridmodel(ly,lx,nvals);
-    end
-    efeats = edgeify_im(img,edge_params,model.pairs,model.pairtype);
-    
-    % do inference
-    [b_i b_ij] = eval_crf(p,feats,efeats,model,loss_spec,crf_type,rho);
-    
-    % interpolate beliefs to original image, get predictions
-    [ly0 lx0 lz] = size(im0);
-    b_i = reshape(b_i',[ly lx nvals]);
-    b_i = imresize(b_i,[ly0 lx0],'bilinear');
-    [~,x_pred] = max(b_i,[],3);
-
-    %preds = miximshow(x_pred,nvals);
-    im_gray = repmat(rgb2gray(im0),[1 1 3]);
-    
-    colormap(cmap)
-    preds = miximshow(b_i,nvals);
-    im_mix = .25*im_gray + .75*preds;
-    imshow(im_mix)
-    colorbar('Location','South','XTickLabel',...
-    {'sky','tree','road','grass','water','bldg','mntn','fg obj'});
-    
-    % write output video
-    currFrame = getframe;
-    writeVideo(vid_write,currFrame);
-
-    drawnow;
-end
-close(vid_write);
+% clf
+% vid_read  = VideoReader('~/Datasets/georgetown_driving.mp4');
+% vid_write = VideoWriter('marginals'); open(vid_write);
+% for i=1:3:vid_read.NumberOfFrames/2,
+%     % load data, make features, etc.
+%     im0   = double(read(vid_read,i))/255;
+%     feats = featurize_im(im0,feat_params);
+%     img    = imresize(im0,.2,'bilinear');
+%     feats = imresize(feats,.2,'bilinear');
+%     [ly lx lz] = size(feats);
+%     feats = reshape(feats,ly*lx,lz);
+%     if i==1
+%         [ly lx lz] = size(img);
+%         model = gridmodel(ly,lx,nvals);
+%     end
+%     efeats = edgeify_im(img,edge_params,model.pairs,model.pairtype);
+%     
+%     % do inference
+%     [b_i b_ij] = eval_crf(p,feats,efeats,model,loss_spec,crf_type,rho);
+%     
+%     % interpolate beliefs to original image, get predictions
+%     [ly0 lx0 lz] = size(im0);
+%     b_i = reshape(b_i',[ly lx nvals]);
+%     b_i = imresize(b_i,[ly0 lx0],'bilinear');
+%     [~,x_pred] = max(b_i,[],3);
+% 
+%     %preds = miximshow(x_pred,nvals);
+%     im_gray = repmat(rgb2gray(im0),[1 1 3]);
+%     
+%     colormap(cmap)
+%     preds = miximshow(b_i,nvals);
+%     im_mix = .25*im_gray + .75*preds;
+%     imshow(im_mix)
+%     colorbar('Location','South','XTickLabel',...
+%     {'sky','tree','road','grass','water','bldg','mntn','fg obj'});
+%     
+%     % write output video
+%     currFrame = getframe;
+%     writeVideo(vid_write,currFrame);
+% 
+%     drawnow;
+% end
+% close(vid_write);
 
 end
