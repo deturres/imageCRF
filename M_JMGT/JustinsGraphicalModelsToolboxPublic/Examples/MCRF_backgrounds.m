@@ -110,6 +110,8 @@ options.maxiter     = 1000;
 options.rho         = rho;
 options.reg         = 1e-4;
 options.opt_display = 0;
+figure('Name','Training...','NumberTitle','off');        
+
 p = train_crf(feats_train,efeats_train,labels_train,models_train,loss_spec,crf_type,options);
 save p p
 %p = [];
@@ -121,6 +123,7 @@ save p p
 
 fprintf('get the marginals for test images...\n');
 % close all
+figure('Name','Testing...','NumberTitle','off');
 for n=1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
     

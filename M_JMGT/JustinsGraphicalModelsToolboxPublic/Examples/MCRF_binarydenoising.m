@@ -50,7 +50,8 @@ siz = length(x{1});
 model = gridmodel(siz,siz,nvals);
 
     % visualization function.
-    % This takes a cell array of predicted beliefs as input, and shows them to the screen during training. 
+    % This takes a cell array of predicted beliefs as input, and shows them to the screen during training.         
+    
     function viz(b_i)
         % here, b_i is a cell array of size nvals X nvars
         for n=1:N
@@ -81,6 +82,8 @@ options.viz         = @viz; % function for visualization
 options.rho         = rho;
 options.print_times = 1;
 options.nvals       = nvals;
+
+figure('Name','Training...','NumberTitle','off');
 
 % we actually optimize
 % This prints a visualization while running, using the viz function above.
