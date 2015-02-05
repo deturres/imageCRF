@@ -1,8 +1,13 @@
 function MCRF_binarydenoising
+clc
+clear all
+close all
 
-% to load your own pattern data
-traindir = './Dataset/fakeData/train/';
-train_names = dir([traindir '*.jpg']);
+% load the data
+traindir = './Dataset/europaData/res50/train/';
+train_names = dir([traindir '*0.5.png']);
+labdir = './Dataset/europaData/res50/labels/';
+lab_names = dir([labdir '*labeledGT.png']);
 
 % parameters of the problem
 N     = length(train_names);  % size of training images
@@ -16,27 +21,53 @@ nvals = 2; % this problem is binary
 % % make a graph for this CRF. (A simple pairwise grid)
 % model = gridmodel(siz,siz,nvals);
 
-% make a bunch of data. Basically, we make noisy images, then smooth them to make the true (discrete) output values, and then add noise to make the input.
+% % load a fake dataset or randomly generate it, Basically, making noisy images, then smoothing them to make the true (discrete) output values, and then adding noise to make the input.
+% x = cell(1,N);
+% for n=1:N
+%     
+%     % random generate data
+%     % x{n} = round(imfilter(rand(siz),fspecial('gaussian',50,7),'same','symmetric')); % true label x
+%     
+%     % load your own data as true label x, add noise to create the input y
+%     I = double(imread(([traindir train_names(n).name])));
+%     img = rgb2gray(I);
+%     x{n}  = round(img); % true label x
+%     imshow(x{n})
+%     
+%     % extremely difficult noise pattern -- from perturbation paper
+%     t = rand(size(x{n}));
+%     noiselevel = 1.25; % in perturbation paper 1.25
+%     y{n} = x{n}.*(1-t.^noiselevel) + (1-x{n}).*t.^noiselevel; % noisy input y
+%     
+% end
+
+% load true label x and input image from europa2_sidewalktetector
 x = cell(1,N);
 for n=1:N
     
-    % random generate data
-    % x{n} = round(imfilter(rand(siz),fspecial('gaussian',50,7),'same','symmetric')); % true label x
-    
-    % load your own data as true label x, add noise to create the input y
-    I = double(imread(([traindir train_names(n).name])));
+    % load input images
+    I = double(imread(([traindir train_names(n).name])))/255;    
     img = rgb2gray(I);
-    x{n}  = round(img); % true label x
-    imshow(x{n})
+    y{n}  = img; % input images x
+    size(y{n})
+    figure('Name','Loading input...','NumberTitle','off'); imshow(y{n});
     
-    % extremely difficult noise pattern -- from perturbation paper
-    t = rand(size(x{n}));
-    noiselevel = 1.25; % in perturbation paper 1.25
-    y{n} = x{n}.*(1-t.^noiselevel) + (1-x{n}).*t.^noiselevel; % noisy input y
+    % load labels
+    L = double(imread(([labdir lab_names(n).name])))/255; % /255
+    limg = rgb2gray(L);
+    x{n}  = round(limg); % true label GT x
+%     x{n} = limg;
+    size(x{n})
+    figure('Name','Loading label...','NumberTitle','off'); imshow(x{n});
     
 end
+
 %%
-% make features and labels. The features consist of simply the input image y itslef and a constant of one.
+% make features and labels.
+% The features consist of simply the input image y itslef and a constant of one.
+% labels from ICCV09 dataset are listed as an array of integers 0-7 with negative for unlabeled in a text file
+% labels representation consists on value from of 1-nvals with 0 for unlabeled
+
 for n=1:N
     feats{n}  = [y{n}(:) 1+0*x{n}(:)];
     labels{n} = x{n}+1;
@@ -46,20 +77,24 @@ end
 efeats = []; % none
 
 % make a graph for this CRF. (A simple pairwise grid)
-siz = length(x{1});
-model = gridmodel(siz,siz,nvals);
+% siz = length(x{1});  % use this in case of squared images
+% model = gridmodel(siz,siz,nvals);
 
+[ly lx lz] = size(y{1});
+model = gridmodel(ly,lx,nvals);
+
+%%
     % visualization function.
     % This takes a cell array of predicted beliefs as input, and shows them to the screen during training.         
     
     function viz(b_i)
         % here, b_i is a cell array of size nvals X nvars
         for n=1:N
-            subplot(3,N,n    ); imshow(reshape(b_i{n}(2,:),siz,siz));
-            title('predicted belief');
-            subplot(3,N,n+  N); imshow(reshape(feats{n}(:,1),siz,siz));
+            subplot(3,N,n    ); imshow(reshape(b_i{n}(2,:),ly,lx));
+            title('predicted belief(marginal)');
+            subplot(3,N,n+  N); imshow(reshape(feats{n}(:,1),ly,lx));
             title('input noisy image');
-            subplot(3,N,n+2*N); imshow(reshape(labels{n}-1,siz,siz));
+            subplot(3,N,n+2*N); imshow(reshape(labels{n}-1,ly,lx));
             title('label');
             
         end
@@ -73,10 +108,10 @@ model = gridmodel(siz,siz,nvals);
 % Other options include 'pert_ul_trw_1e5' (perturbation, univariate logistic loss, TRW, threshold of 1e-5),
 % 'em_mnf_1e5' (Surrogate Expectation-Maximization based on mean-field with a threshold of 1e-5 (simplifies to surrogate likelihood with no hidden variables),
 % or 'trunc_em_trwpll_10' (Truncated surrogate EM based on multithreaded TRW with 10 iterations).
-loss_spec = 'trunc_cl_trw_5';
+loss_spec = 'trunc_cl_trw_5'; % parameter learning
 
 % some parameters for the training optimization
-crf_type  = 'linear_linear';
+crf_type  = 'linear_linear'; % inference
 options.derivative_check = 'off';
 options.viz         = @viz; % function for visualization
 options.rho         = rho;
@@ -94,20 +129,22 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 % Since there are no features, though, G just multiplies a constant of 1, meaning that the 4 entries of G are themselves the log-potentials for the four possible values of (x_i,x_j).
 
 
-
+%%
 %-----------------testing----------------%
 
 % Now that we've trained the image, let's make a new test image, and get example marginals for it.
-% make a test image
-x = round(imfilter(rand(siz),fspecial('gaussian',50,7),'same','symmetric'));
+% make a test image; use siz as dimension if you are generating dataset or using fake pregenerated
+[ly lx lz] = size(y{1});
+x = round(imfilter(rand(ly,lx),fspecial('gaussian',50,7),'same','symmetric')); % label 
 t = rand(size(x));
-y = x.*(1-t.^noiselevel) + (1-x).*t.^noiselevel; 
+noiselevel = 1.25;
+y = x.*(1-t.^noiselevel) + (1-x).*t.^noiselevel; % input
 feats  = [y(:) 1+0*x(:)];
 labels = x+1;
 
 [b_i b_ij] = eval_crf(p,feats,efeats,model,loss_spec,crf_type,rho);
 
-b_i = reshape(b_i',[siz siz nvals]);
+b_i = reshape(b_i',[ly lx nvals]);
 
 [~,label_pred] = max(b_i,[],3);
 error = mean(label_pred(:)~=labels(:))

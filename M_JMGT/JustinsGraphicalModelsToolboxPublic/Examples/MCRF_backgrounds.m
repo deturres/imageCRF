@@ -1,4 +1,7 @@
 function MCRF_backgrounds
+clc
+clear all
+close all
 
 imsdir = './Dataset/iccv09Data/images/'; % Change this to fit your system!
 labdir = './Dataset/iccv09Data/labels/'; % Change this to fit your system!
@@ -9,10 +12,10 @@ rho    = .5; % (1 = loopy belief propagation) (.5 = tree-reweighted belief propa
 ims_names = dir([imsdir '*.jpg']);
 lab_names = dir([labdir '*regions.txt']);
 
-% labels are listed as an array of integers 0-7 with negative for unlabeled in a text file
+% labels from ICCV09 dataset are listed as an array of integers 0-7 with negative for unlabeled in a text file
 % must convert to our representation of 1-8 with 0 for unlabeled
 
-N = length(ims_names);
+N = 5; % length(ims_names);
 ims    = cell(N,1);
 labels = cell(N,1);
 
@@ -25,7 +28,7 @@ parfor n=1:N
     % load data
     lab = importdata([labdir lab_names(n).name]);
     img = double(imread(([imsdir ims_names(n).name])))/255;
-    ims{n}  = img;
+    ims{n}  = img; % figure(1); imshow(ims{n})
     labels0{n} = max(0,lab+1);
     
     % compute features
@@ -41,7 +44,7 @@ parfor n=1:N
     feats{n} = reshape(feats{n},ly*lx,lz);
 end 
 
-
+%% 
 % the images come in slightly different sizes, so we need to make many models
 % use a "hashing" strategy to not rebuild.  Start with empty giant array
 model_hash = repmat({[]},1000,1000);
@@ -85,6 +88,7 @@ labels_test  = labels(who_test);
 labels0_test = labels0(who_test);
 models_test  = models(who_test);
 
+%%
     % visualization function
     function viz(b_i)
         % here, b_i is a cell array of size nvals x nvars
