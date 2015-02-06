@@ -1,7 +1,4 @@
 function MCRF_backgrounds
-clc
-clear all
-close all
 
 imsdir = './Dataset/iccv09Data/images/'; % Change this to fit your system!
 labdir = './Dataset/iccv09Data/labels/'; % Change this to fit your system!
@@ -88,7 +85,7 @@ labels_test  = labels(who_test);
 labels0_test = labels0(who_test);
 models_test  = models(who_test);
 
-%%
+
     % visualization function
     function viz(b_i)
         % here, b_i is a cell array of size nvals x nvars
@@ -104,6 +101,7 @@ models_test  = models(who_test);
         drawnow
     end
 
+%%
 fprintf('training the model (this is slow!)...\n')
 loss_spec = 'trunc_cl_trwpll_5';
 crf_type  = 'linear_linear';
@@ -127,6 +125,7 @@ save p p
 
 fprintf('get the marginals for test images...\n');
 % close all
+
 figure('Name','Testing...','NumberTitle','off');
 for n=1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
@@ -162,14 +161,14 @@ end
 fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
 
 % colormap-- taken from http://dags.stanford.edu/projects/scenedataset.html
-cmap = [.5  .5  .5;
-        .5  .5   0;
-        .5  .25 .5;
-        0   .5   0;
-        0    0   .5;
-        .5   0   0;
-        .5  .31  0;
-        1   .5   0];
+% cmap = [.5  .5  .5;
+%         .5  .5   0;
+%         .5  .25 .5;
+%         0   .5   0;
+%         0    0   .5;
+%         .5   0   0;
+%         .5  .31  0;
+%         1   .5   0];
         
 % takes about .62s to compute features and 
 % .72s to compue marginals
@@ -219,5 +218,4 @@ cmap = [.5  .5  .5;
 %     drawnow;
 % end
 % close(vid_write);
-
 end

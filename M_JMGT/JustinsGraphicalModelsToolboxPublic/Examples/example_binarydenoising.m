@@ -60,9 +60,20 @@ labels = x+1;
 
 [b_i b_ij] = eval_crf(p,feats,efeats,model,loss_spec,crf_type,rho);
 
-b_i = reshape(b_i',[siz siz nvals]);
+b_i_r = reshape(b_i',[siz siz nvals]);
 
-[~,label_pred] = max(b_i,[],3);
+[~,label_pred] = max(b_i_r,[],3);
+label_pred(:)
 error = mean(label_pred(:)~=labels(:))
 
+% visualizing final  predicted marginal
+figure('Name','Testing... ','NumberTitle','off');
+subplot(4,N,1    ); imshow(reshape(b_i(2,:),ly,lx));
+title('predicted marginal belief');
+subplot(4,N,1+  N); imshow(reshape(feats(:,1),ly,lx));
+title('input');
+subplot(4,N,1+2*N); imshow(reshape(labels(:)-1,ly,lx));
+title('true label');
+subplot(4,N,1+3*N); imshow(reshape(label_pred(:)-1,ly,lx));
+title('predicetd label');
 end

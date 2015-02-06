@@ -1,19 +1,15 @@
-function MCRF_binarydenoising
-clc
-clear all
-close all
+function MCRF_binarydenoising(path_name)
 
 % load the data
-traindir = './Dataset/europaData/res50/train/';
+traindir = [ path_name '/train/'];
 train_names = dir([traindir '*0.5.png']);
-labdir = './Dataset/europaData/res50/labels/';
-lab_names = dir([labdir '*labeledGT.png']);
+labdir = [ path_name '/labels/'];
+lab_names = dir([labdir '*labeledGT_shrink.png']); %_shrink
 
 % parameters of the problem
 N     = length(train_names);  % size of training images
 % N     = 4;  % size of training images random generated
 % siz   = 50; % size of training images random generated
-
 rho   = .5; % TRW edge appearance probability
 nvals = 2; % this problem is binary
 
@@ -87,20 +83,20 @@ model = gridmodel(ly,lx,nvals);
     % visualization function.
     % This takes a cell array of predicted beliefs as input, and shows them to the screen during training.         
     
-    function viz(b_i)
-        % here, b_i is a cell array of size nvals X nvars
-        for n=1:N
-            subplot(3,N,n    ); imshow(reshape(b_i{n}(2,:),ly,lx));
-            title('predicted belief(marginal)');
-            subplot(3,N,n+  N); imshow(reshape(feats{n}(:,1),ly,lx));
-            title('input noisy image');
-            subplot(3,N,n+2*N); imshow(reshape(labels{n}-1,ly,lx));
-            title('label');
-            
-        end
-        xlabel('top: marginals  middle: input  bottom: labels')
-        drawnow
-    end
+%     function viz(b_i)
+%         % here, b_i is a cell array of size nvals X nvars (univariate marginals)
+%         for n=1:N
+%             subplot(3,N,n    ); imshow(reshape(b_i{n}(2,:),ly,lx));
+%             title('predicted belief');
+%             subplot(3,N,n+  N); imshow(reshape(feats{n}(:,1),ly,lx));
+%             title('input noisy image');
+%             subplot(3,N,n+2*N); imshow(reshape(labels{n}-1,ly,lx));
+%             title('label');
+%             
+%         end
+%         xlabel('top: marginals  middle: input  bottom: labels')
+%         drawnow
+%     end
 
 %-----------------training----------------%
 
@@ -108,17 +104,17 @@ model = gridmodel(ly,lx,nvals);
 % Other options include 'pert_ul_trw_1e5' (perturbation, univariate logistic loss, TRW, threshold of 1e-5),
 % 'em_mnf_1e5' (Surrogate Expectation-Maximization based on mean-field with a threshold of 1e-5 (simplifies to surrogate likelihood with no hidden variables),
 % or 'trunc_em_trwpll_10' (Truncated surrogate EM based on multithreaded TRW with 10 iterations).
-loss_spec = 'trunc_cl_trw_5'; % parameter learning
+loss_spec = 'trunc_cl_trw_5'; % parameter learning and inference
 
 % some parameters for the training optimization
-crf_type  = 'linear_linear'; % inference
+crf_type  = 'linear_linear'; 
 options.derivative_check = 'off';
-options.viz         = @viz; % function for visualization
+% options.viz         = @viz; % function for visualization
 options.rho         = rho;
 options.print_times = 1;
 options.nvals       = nvals;
 
-figure('Name','Training...','NumberTitle','off');
+% figure('Name','Training...','NumberTitle','off');
 
 % we actually optimize
 % This prints a visualization while running, using the viz function above.
@@ -134,19 +130,34 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 
 % Now that we've trained the image, let's make a new test image, and get example marginals for it.
 % make a test image; use siz as dimension if you are generating dataset or using fake pregenerated
+% x = round(imfilter(rand(ly,lx),fspecial('gaussian',50,7),'same','symmetric')); % label 
+% t = rand(size(x));
+% noiselevel = 1.25;
+% y = x.*(1-t.^noiselevel) + (1-x).*t.^noiselevel; % input
+% feats  = [y(:) 1+0*x(:)];
+% labels = x+1;
+
+%%using the very same image as testing image
 [ly lx lz] = size(y{1});
-x = round(imfilter(rand(ly,lx),fspecial('gaussian',50,7),'same','symmetric')); % label 
-t = rand(size(x));
-noiselevel = 1.25;
-y = x.*(1-t.^noiselevel) + (1-x).*t.^noiselevel; % input
+y=y{1};
+x=x{1};
 feats  = [y(:) 1+0*x(:)];
 labels = x+1;
-
 [b_i b_ij] = eval_crf(p,feats,efeats,model,loss_spec,crf_type,rho);
 
-b_i = reshape(b_i',[ly lx nvals]);
+b_i_reshape = reshape(b_i',[ly lx nvals]);
 
-[~,label_pred] = max(b_i,[],3);
+[~,label_pred] = max(b_i_reshape,[],3);
 error = mean(label_pred(:)~=labels(:))
 
+% visualizing final predicted marginal and label
+figure('Name','Testing.. ','NumberTitle','off');
+subplot(4,N,1    ); imshow(reshape(b_i(2,:),ly,lx));
+title('predicted marginal belief');
+subplot(4,N,1+  N); imshow(reshape(feats(:,1),ly,lx));
+title('input');
+subplot(4,N,1+2*N); imshow(reshape(labels(:)-1,ly,lx));
+title('true label');
+subplot(4,N,1+3*N); imshow(reshape(label_pred(:)-1,ly,lx));
+title('predicted label');
 end
