@@ -154,30 +154,31 @@ b_i_reshape = reshape(b_i',[ly lx nvals]);
 
 % computing the predicted labels considering value bigger than threshold t as
 % label 1, otherwise as label 0
-t = 0.75;
+t = 0.9;
 siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
 [i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t)); % k is a vector of indexes corresponding to the values that we search for
-% non tutti gli indici!!!!!! TODO
-for r=1:i
-    for c=1:j
-        
-b_i_reshape(i,j,2) = 0.0;
-    end
+
+for n=1:size(i)        
+    b_i_reshape(i(n),j(n),2) = 0.0;
 end
 
 [~,label_pred] = max(b_i_reshape,[],3);
 error = mean(label_pred(:)~=labels(:))
 
 % visualizing final predicted marginal and label
-figure('Name','Testing.. ','NumberTitle','off');
-subplot(3,N,1    ); imshow(reshape(b_i(2,:),ly,lx));
-title('predicted marginal belief');
-subplot(3,N,1+  N); imshow(reshape(feats(:,1),ly,lx));
-title('input');
-subplot(3,N,1+2*N); imshow(reshape(labels(:)-1,ly,lx));
-title('true label');
+figure('Name','Testing..marginal ','NumberTitle','off');
+subplot(2,N,1    ); imshow(reshape(b_i(2,:),ly,lx));
+title('predicted marginal belief(class1))');
+subplot(2,N,1+  N); imshow(reshape(b_i(1,:),ly,lx));
+title('predicted marginal belief(class0))');
 
-figure('Name','Testing..predicted label','NumberTitle','off');
+figure('Name','Testing..labels','NumberTitle','off');
+subplot(N,3,1); imshow(reshape(feats(:,1),ly,lx));
+title('input');
+subplot(N,3,1+  N); imshow(reshape(labels(:)-1,ly,lx));
+title('true label');
+hold on; axes();
+subplot(N,3,1+  2*N);
 imshow(reshape(label_pred(:)-1,ly,lx));
-% imshow(reshape(b_i(1,:),ly,lx));
+title('predicted label');
 end
