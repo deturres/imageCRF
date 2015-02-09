@@ -68,12 +68,12 @@ error = mean(label_pred(:)~=labels(:))
 
 % visualizing final  predicted marginal
 figure('Name','Testing... ','NumberTitle','off');
-subplot(4,N,1    ); imshow(reshape(b_i(2,:),ly,lx));
+subplot(4,N,1    ); imshow(reshape(b_i(2,:),siz, siz));
 title('predicted marginal belief');
-subplot(4,N,1+  N); imshow(reshape(feats(:,1),ly,lx));
+subplot(4,N,1+  N); imshow(reshape(feats(:,1),siz, siz));
 title('input');
-subplot(4,N,1+2*N); imshow(reshape(labels(:)-1,ly,lx));
+subplot(4,N,1+2*N); imshow(reshape(labels(:)-1,siz, siz));
 title('true label');
-subplot(4,N,1+3*N); imshow(reshape(label_pred(:)-1,ly,lx));
+subplot(4,N,1+3*N); imshow(reshape(label_pred(:)-1,siz, siz));
 title('predicetd label');
 end

@@ -121,7 +121,8 @@ options.nvals       = nvals;
 p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 
 % The result is a structure array p. It contains two matrices. The first, F, determines the univariate potentials. 
-% Specifically, the vector of log-potentials for node i is given by multiplying F with the features for node i. Similarly, G determines the log-potentials for the edge interactions. 
+% Specifically, the vector of log-potentials for node i is given by multiplying F with the features for node i. 
+% Similarly, G determines the log-potentials for the edge interactions. 
 % Since there are no features, though, G just multiplies a constant of 1, meaning that the 4 entries of G are themselves the log-potentials for the four possible values of (x_i,x_j).
 
 
@@ -139,29 +140,33 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 
 %%using the very same image as testing image
 [ly lx lz] = size(y{1});
-y=y{1};
-x=x{1};
-feats  = [y(:) 1+0*x(:)];
-labels = x+1;
+yt=y{1};
+xt=x{1};
+feats  = [yt(:) 1+0*xt(:)];
+labels = xt+1;
 [b_i b_ij] = eval_crf(p,feats,efeats,model,loss_spec,crf_type,rho);
 
 b_i_reshape = reshape(b_i',[ly lx nvals]);
 
-%%label according to them
-[~,label_pred] = max(b_i_reshape,[],3);
-error = mean(label_pred(:)~=labels(:))
+% label according to them
+% [~,label_pred] = max(b_i_reshape,[],3);
+% error = mean(label_pred(:)~=labels(:))
 
 % computing the predicted labels considering value bigger than threshold t as
 % label 1, otherwise as label 0
 t = 0.75;
-siz = [size(b_i_reshape,1),size(b_i_reshape,2),size(b_i_reshape,3)];
-[i,j,k] = ind2sub(siz,find(b_i_reshape<t)); % k is a vector of indexes corresponding to the values that we want
-pred_labels = zeros(size(labels));
-% for i=1:size(pred_labels)
-%     ????
-% end
-% 
-% new_error = mean(pred_labels(:)~=labels(:))
+siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
+[i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t)); % k is a vector of indexes corresponding to the values that we search for
+% non tutti gli indici!!!!!! TODO
+for r=1:i
+    for c=1:j
+        
+b_i_reshape(i,j,2) = 0.0;
+    end
+end
+
+[~,label_pred] = max(b_i_reshape,[],3);
+error = mean(label_pred(:)~=labels(:))
 
 % visualizing final predicted marginal and label
 figure('Name','Testing.. ','NumberTitle','off');
@@ -173,5 +178,6 @@ subplot(3,N,1+2*N); imshow(reshape(labels(:)-1,ly,lx));
 title('true label');
 
 figure('Name','Testing..predicted label','NumberTitle','off');
-% imshow(reshape(pred_labels(:)-1,ly,lx));
+imshow(reshape(label_pred(:)-1,ly,lx));
+% imshow(reshape(b_i(1,:),ly,lx));
 end
