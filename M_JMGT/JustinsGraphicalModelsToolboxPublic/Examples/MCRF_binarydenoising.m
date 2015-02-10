@@ -4,7 +4,7 @@ function MCRF_binarydenoising(path_name)
 traindir = [ path_name '/train/'];
 train_names = dir([traindir '*0.5.png']);
 labdir = [ path_name '/labels/'];
-lab_names = dir([labdir '*labeledGT_shrink.png']); %_shrink
+lab_names = dir([labdir '*GT_shrink.png']); %_shrink
 
 % parameters of the problem
 N     = length(train_names);  % size of training images
@@ -67,7 +67,18 @@ end
 for n=1:N
     feats{n}  = [y{n}(:) 1+0*x{n}(:)];
     labels{n} = x{n}+1;
+    
+    %CHECK!!!!!!
+    % finding the first n max values, to not beconsidered in the learning
+    [sortedFeats,sortingIndices] = sort(feats{n},'descend');
+
+    M = (size(feats{n},1))*5/100;
+    maxValues = sortedFeats(1:M);
+    maxValueIndices = sortingIndices(1:M)
+    
 end
+
+
 
 % no edge features here (smootheness of the result)
 efeats = []; % none
@@ -130,7 +141,7 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 %-----------------testing----------------%
 
 % Now that we've trained the image, let's make a new test image, and get example marginals for it.
-% make a test image; use siz as dimension if you are generating dataset or using fake pregenerated
+% Make a test image; use siz as dimension if you are generating dataset or using fake pregenerated
 % x = round(imfilter(rand(ly,lx),fspecial('gaussian',50,7),'same','symmetric')); % label 
 % t = rand(size(x));
 % noiselevel = 1.25;
@@ -138,7 +149,7 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 % feats  = [y(:) 1+0*x(:)];
 % labels = x+1;
 
-%%using the very same image as testing image
+% using the very same image as testing image
 [ly lx lz] = size(y{1});
 yt=y{1};
 xt=x{1};
@@ -148,21 +159,21 @@ labels = xt+1;
 
 b_i_reshape = reshape(b_i',[ly lx nvals]);
 
-% label according to them
-% [~,label_pred] = max(b_i_reshape,[],3);
-% error = mean(label_pred(:)~=labels(:))
-
 % computing the predicted labels considering value bigger than threshold t as
 % label 1, otherwise as label 0
-t = 0.9;
+t = 0.75;
 siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
-[i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t)); % k is a vector of indexes corresponding to the values that we search for
+[i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t));
 
 for n=1:size(i)        
     b_i_reshape(i(n),j(n),2) = 0.0;
 end
 
+% choose between max value (taking the corresponding index-->class) and
+% mean value directly corresponding tothe probability predicted label
+
 [~,label_pred] = max(b_i_reshape,[],3);
+% [label_pred] = mean(b_i_reshape,3);
 error = mean(label_pred(:)~=labels(:))
 
 % visualizing final predicted marginal and label
@@ -179,6 +190,6 @@ subplot(N,3,1+  N); imshow(reshape(labels(:)-1,ly,lx));
 title('true label');
 hold on; axes();
 subplot(N,3,1+  2*N);
-imshow(reshape(label_pred(:)-1,ly,lx));
+imshow(reshape(label_pred(:)-1,ly,lx)); % -1 to the label just in case they were computed with max()
 title('predicted label');
 end

@@ -67,13 +67,17 @@ label_pred(:)
 error = mean(label_pred(:)~=labels(:))
 
 % visualizing final  predicted marginal
-figure('Name','Testing... ','NumberTitle','off');
-subplot(4,N,1    ); imshow(reshape(b_i(2,:),siz, siz));
-title('predicted marginal belief');
-subplot(4,N,1+  N); imshow(reshape(feats(:,1),siz, siz));
+figure('Name','Testing...marginals ','NumberTitle','off');
+subplot(2,N,1    ); imshow(reshape(b_i(2,:),siz, siz));
+title('predicted marginal belief(class 1)');
+subplot(2,N,1 + N); imshow(reshape(b_i(1,:),siz, siz));
+title('predicted marginal belief(class 0)');
+
+figure('Name','Testing...predicted label ','NumberTitle','off');
+subplot(N,3,1    ); imshow(reshape(feats(:,1),siz, siz));
 title('input');
-subplot(4,N,1+2*N); imshow(reshape(labels(:)-1,siz, siz));
+subplot(N,3,1 + N); imshow(reshape(labels(:)-1,siz, siz));
 title('true label');
-subplot(4,N,1+3*N); imshow(reshape(label_pred(:)-1,siz, siz));
+subplot(N,3,1+2*N); imshow(reshape(label_pred(:)-1,siz, siz));
 title('predicetd label');
 end
