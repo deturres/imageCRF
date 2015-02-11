@@ -4,7 +4,7 @@ function MCRF_binarydenoising(path_name)
 traindir = [ path_name '/train/'];
 train_names = dir([traindir '*0.5.png']);
 labdir = [ path_name '/labels/'];
-lab_names = dir([labdir '*GT_shrink.png']); %_shrink
+lab_names = dir([labdir '*GT_shrink.png']); 
 
 % parameters of the problem
 N     = length(train_names);  % size of training images
@@ -12,10 +12,6 @@ N     = length(train_names);  % size of training images
 % siz   = 50; % size of training images random generated
 rho   = .5; % TRW edge appearance probability
 nvals = 2; % this problem is binary
-
-
-% % make a graph for this CRF. (A simple pairwise grid)
-% model = gridmodel(siz,siz,nvals);
 
 % % load a fake dataset or randomly generate it, Basically, making noisy images, then smoothing them to make the true (discrete) output values, and then adding noise to make the input.
 % x = cell(1,N);
@@ -31,12 +27,13 @@ nvals = 2; % this problem is binary
 %     imshow(x{n})
 %     
 %     % extremely difficult noise pattern -- from perturbation paper
-%     t = rand(size(x{n}));
+%     t = rand(size(x{n})); 
 %     noiselevel = 1.25; % in perturbation paper 1.25
 %     y{n} = x{n}.*(1-t.^noiselevel) + (1-x{n}).*t.^noiselevel; % noisy input y
 %     
 % end
 
+fprintf('loading data and computing feature maps...\n');
 % load true label x and input image from europa2_sidewalktetector
 x = cell(1,N);
 for n=1:N
@@ -45,15 +42,12 @@ for n=1:N
     I = double(imread(([traindir train_names(n).name])))/255;    
     img = rgb2gray(I);
     y{n}  = img; % input images x
-    size(y{n})
     figure('Name','Loading input...','NumberTitle','off'); imshow(y{n});
-    
     % load labels
-    L = double(imread(([labdir lab_names(n).name])))/255; % /255
+    L = double(imread(([labdir lab_names(n).name])))/255;
     limg = rgb2gray(L);
     x{n}  = round(limg); % true label GT x
 %     x{n} = limg;
-    size(x{n})
     figure('Name','Loading label...','NumberTitle','off'); imshow(x{n});
     
 end
@@ -67,18 +61,13 @@ end
 for n=1:N
     feats{n}  = [y{n}(:) 1+0*x{n}(:)];
     labels{n} = x{n}+1;
-    
-    %CHECK!!!!!!
-    % finding the first n max values, to not beconsidered in the learning
-    [sortedFeats,sortingIndices] = sort(feats{n},'descend');
-
-    M = (size(feats{n},1))*5/100;
-    maxValues = sortedFeats(1:M);
-    maxValueIndices = sortingIndices(1:M)
-    
+    % finding the first n max values(value<0.2)to be set to 0 (less weight on teh learning)
+    [r,c] = find(feats{n}<0.2);
+    for m=1:size(r)        
+        feats{n}(r(m),c(m)) = 0.0;
+    end
+    figure('Name','Loading feature without extreme positive value...','NumberTitle','off'); imshow(reshape(feats{n}(:,1),size(y{1},1),size(y{1},2)));
 end
-
-
 
 % no edge features here (smootheness of the result)
 efeats = []; % none
@@ -109,8 +98,9 @@ model = gridmodel(ly,lx,nvals);
 %         drawnow
 %     end
 
+%% 
 %-----------------training----------------%
-
+fprintf('training the model (this is slow!)...\n')
 % We pick a string to specify the loss and inference method. In this case, we choose truncated fitting with the clique logistic loss based on TRW with five iterations.
 % Other options include 'pert_ul_trw_1e5' (perturbation, univariate logistic loss, TRW, threshold of 1e-5),
 % 'em_mnf_1e5' (Surrogate Expectation-Maximization based on mean-field with a threshold of 1e-5 (simplifies to surrogate likelihood with no hidden variables),
