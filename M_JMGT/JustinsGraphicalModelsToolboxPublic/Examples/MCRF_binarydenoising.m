@@ -2,9 +2,9 @@ function MCRF_binarydenoising(path_name)
 
 % load the data
 traindir = [ path_name '/train/'];
-train_names = dir([traindir '*0.5.png']);
+train_names = dir([traindir '*0.5_nonoise.png']); % 0.5_origin_... in case version in black (.._nonoise)
 labdir = [ path_name '/labels/'];
-lab_names = dir([labdir '*GT_shrink.png']); 
+lab_names = dir([labdir '*0.5_GT_shrink.png']); % origin_nonoise_... in case version in black
 
 % parameters of the problem
 N     = length(train_names);  % size of training images
@@ -61,12 +61,13 @@ end
 for n=1:N
     feats{n}  = [y{n}(:) 1+0*x{n}(:)];
     labels{n} = x{n}+1;
-    % finding the first n max values(value<0.2)to be set to 0 (less weight on teh learning)
-    [r,c] = find(feats{n}<0.2);
-    for m=1:size(r)        
-        feats{n}(r(m),c(m)) = 0.0;
-    end
-    figure('Name','Loading feature without extreme positive value...','NumberTitle','off'); imshow(reshape(feats{n}(:,1),size(y{1},1),size(y{1},2)));
+%     % finding the first n max values(value<0.2)to be set to 1 (less weight to be of class 0)
+%     [r,c] = find(feats{n}<0.35);
+%     for m=1:size(r)        
+%         feats{n}(r(m),c(m)) = 1.0;
+%     end
+%     figure('Name','Loading feature without extreme positive value...','NumberTitle','off'); 
+%     imshow(reshape(feats{n}(:,1),size(y{1},1),size(y{1},2)));
 end
 
 % no edge features here (smootheness of the result)
@@ -143,28 +144,39 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 [ly lx lz] = size(y{1});
 yt=y{1};
 xt=x{1};
-feats  = [yt(:) 1+0*xt(:)];
-labels = xt+1;
-[b_i b_ij] = eval_crf(p,feats,efeats,model,loss_spec,crf_type,rho);
+featst  = [yt(:) 1+0*xt(:)];
+labelst = xt+1;
+[b_i b_ij] = eval_crf(p,featst,efeats,model,loss_spec,crf_type,rho);
 
 b_i_reshape = reshape(b_i',[ly lx nvals]);
 
-% computing the predicted labels considering value bigger than threshold t as
-% label 1, otherwise as label 0
-t = 0.75;
-siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
-[i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t));
+% (case 0(black) = yes curb!)
+% computing the predicted labels considering value bigger than threshold t=0.75 as
+% label 1, otherwise as label 0(yes curb!)
+% t = 0.7;
+% siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
+% [i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t));
+% 
+% for n=1:size(i)        
+%     b_i_reshape(i(n),j(n),2) = 0.0;
+% end
 
-for n=1:size(i)        
-    b_i_reshape(i(n),j(n),2) = 0.0;
-end
+% (case 1(white) = yes curb!) using origin image
+% computing the predicted labels considering value smaller than threshold t as
+% label 0, otherwise as label 1
+% t = 0.80;
+% siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
+% [i,j] = ind2sub(siz,find(b_i_reshape(:,:,1)>t));
+% 
+% for n=1:size(i)        
+%     b_i_reshape(i(n),j(n),2) = 1.0;
+% end
 
 % choose between max value (taking the corresponding index-->class) and
 % mean value directly corresponding tothe probability predicted label
-
 [~,label_pred] = max(b_i_reshape,[],3);
 % [label_pred] = mean(b_i_reshape,3);
-error = mean(label_pred(:)~=labels(:))
+error = mean(label_pred(:)~=labelst(:))
 
 % visualizing final predicted marginal and label
 figure('Name','Testing..marginal ','NumberTitle','off');
@@ -174,9 +186,9 @@ subplot(2,N,1+  N); imshow(reshape(b_i(1,:),ly,lx));
 title('predicted marginal belief(class0))');
 
 figure('Name','Testing..labels','NumberTitle','off');
-subplot(N,3,1); imshow(reshape(feats(:,1),ly,lx));
+subplot(N,3,1); imshow(reshape(featst(:,1),ly,lx));
 title('input');
-subplot(N,3,1+  N); imshow(reshape(labels(:)-1,ly,lx));
+subplot(N,3,1+  N); imshow(reshape(labelst(:)-1,ly,lx));
 title('true label');
 hold on; axes();
 subplot(N,3,1+  2*N);
