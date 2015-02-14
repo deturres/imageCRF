@@ -2,9 +2,9 @@ function MCRF_binarydenoising(path_name)
 
 % load the data
 traindir = [ path_name '/train/'];
-train_names = dir([traindir '*0.5_nonoise.png']); % 0.5_origin_... in case version in black (.._nonoise)
+train_names = dir([traindir '*0.5_nonoise.png']); %  in case version in black use 0.5_origin_...
 labdir = [ path_name '/labels/'];
-lab_names = dir([labdir '*0.5_GT_shrink.png']); % origin_nonoise_... in case version in black
+lab_names = dir([labdir '*0.5_GT_shrink.png']); % in case version in black (origin_nonoise_...) 
 
 % parameters of the problem
 N     = length(train_names);  % size of training images
@@ -13,7 +13,7 @@ N     = length(train_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
 nvals = 2; % this problem is binary
 
-% % load a fake dataset or randomly generate it, Basically, making noisy images, then smoothing them to make the true (discrete) output values, and then adding noise to make the input.
+% % load a fake dataset or randomly genexrate it, Basically, making noisy images, then smoothing them to make the true (discrete) output values, and then adding noise to make the input.
 % x = cell(1,N);
 % for n=1:N
 %     
@@ -153,13 +153,13 @@ b_i_reshape = reshape(b_i',[ly lx nvals]);
 % (case 0(black) = yes curb!)
 % computing the predicted labels considering value bigger than threshold t=0.75 as
 % label 1, otherwise as label 0(yes curb!)
-% t = 0.7;
-% siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
-% [i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t));
-% 
-% for n=1:size(i)        
-%     b_i_reshape(i(n),j(n),2) = 0.0;
-% end
+t = 0.8;
+siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
+[i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t));
+
+for n=1:size(i)        
+    b_i_reshape(i(n),j(n),2) = 0.0;
+end
 
 % (case 1(white) = yes curb!) using origin image
 % computing the predicted labels considering value smaller than threshold t as
