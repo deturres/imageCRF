@@ -41,7 +41,7 @@ for n=1:N
     % load input images
     I = double(imread(([traindir train_names(n).name])))/255;    
     img = rgb2gray(I);
-    y{n}  = img; % input images x
+    y{n}  = img; % input images y
     figure('Name','Loading input...','NumberTitle','off'); imshow(y{n});
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
