@@ -77,7 +77,7 @@ efeats = []; % none
 % siz = length(x{1});  % use this in case of squared images
 % model = gridmodel(siz,siz,nvals);
 
-[ly lx lz] = size(y{1});
+[ly lx] = size(y{1});
 model = gridmodel(ly,lx,nvals);
 
 %%
@@ -141,7 +141,7 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 % labels = x+1;
 
 % using the very same image as testing image
-[ly lx lz] = size(y{1});
+[ly lx] = size(y{1});
 yt=y{1};
 xt=x{1};
 featst  = [yt(:) 1+0*xt(:)];
