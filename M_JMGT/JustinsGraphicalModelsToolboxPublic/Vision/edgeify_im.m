@@ -1,7 +1,7 @@
 function [feats names] = edgeify_im(im,edge_params,pairs,pairtype)
 
 % F = edgeify_im(im,{{'patches',2},{'hog',32}});
-% take a ly x lx image and return a lz x npairs image of features
+% take a ly x lx x lz image and return a lz x npairs image of features
 %
 % pairtypes (which must be last) takes all the previously existing
 % features, and multiplies them by an indicator function for each possible
@@ -33,6 +33,9 @@ for i=1:length(edge_params)
         nfeat = nfeat + 5;
     elseif strcmp(fp{1},'canny')
         nfeat = nfeat + 10;
+        % pca edge features
+    elseif strcmp(fp{1},'pca')
+        nfeat = nfeat + 2;
     elseif strcmp(fp{1},'pairtypes')
         if i~=length(edge_params)
             error('pairtypes must be last!');
@@ -53,8 +56,13 @@ for i=1:length(edge_params)
     fp = edge_params{i};
     if strcmp(fp{1},'const')
         %feats = cat(3,feats,ones(ly,lx));
-        feats(:,where) = ones(1,npairs);
+        feats(:,where) = ones(1,npairs); % ones(npairs,1)
         names{where} = 'const';
+        where=where+1;
+    elseif strcmp(fp{1},'pca')
+%         [hor_efeats_ij ver_efeats_ij] = evaluate_pca(im);
+%         feats(:,where) = ones(1,npairs);
+        names{where} = 'pca';
         where=where+1;
     elseif strcmp(fp{1},'diffthresh')
         diff = 0;
