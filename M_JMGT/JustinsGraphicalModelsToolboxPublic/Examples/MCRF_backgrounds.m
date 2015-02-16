@@ -9,10 +9,10 @@ rho    = .5; % (1 = loopy belief propagation) (.5 = tree-reweighted belief propa
 ims_names = dir([imsdir '*.jpg']);
 lab_names = dir([labdir '*regions.txt']);
 
-% labels from ICCV09 dataset are listed as an array of integers 0-7 with negative for unlabeled in a text file
+% Thelabels from ICCV09 dataset are listed as an array of integers 0-7 with negative for unlabeled in a text file
 % must convert to our representation of 1-8 with 0 for unlabeled
 
-N = 5; % length(ims_names);
+N = 1; % length(ims_names);
 ims    = cell(N,1);
 labels = cell(N,1);
 
@@ -85,7 +85,7 @@ labels_test  = labels(who_test);
 labels0_test = labels0(who_test);
 models_test  = models(who_test);
 
-
+%%
     % visualization function
     function viz(b_i)
         % here, b_i is a cell array of size nvals x nvars
