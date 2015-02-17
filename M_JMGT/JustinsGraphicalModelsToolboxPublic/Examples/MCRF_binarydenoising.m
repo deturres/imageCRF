@@ -1,9 +1,9 @@
 function MCRF_binarydenoising(path_name)
 
 %% load the data
-traindir = [ path_name '/train/'];
+traindir = [ path_name '/train/log1'];
 train_names = dir([traindir '*0.5_nonoise.png']); %  in case version in black use 0.5_origin_...
-labdir = [ path_name '/labels/'];
+labdir = [ path_name '/labels/log1'];
 lab_names = dir([labdir '*0.5_GT_shrink.png']); % in case version in black (origin_nonoise_...) 
 
 % parameters of the problem

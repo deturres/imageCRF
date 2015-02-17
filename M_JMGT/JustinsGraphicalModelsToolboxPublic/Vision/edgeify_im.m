@@ -59,10 +59,9 @@ for i=1:length(edge_params)
         feats(:,where) = ones(1,npairs); % ones(npairs,1)
         names{where} = 'const';
         where=where+1;
-    elseif strcmp(fp{1},'pca')
-%         [hor_efeats_ij ver_efeats_ij] = evaluate_pca(im);
+    elseif strcmp(fp{1},'threshangle')
 %         feats(:,where) = ones(1,npairs);
-        names{where} = 'pca';
+        names{where} = 'threshangle';
         where=where+1;
     elseif strcmp(fp{1},'diffthresh')
         diff = 0;
