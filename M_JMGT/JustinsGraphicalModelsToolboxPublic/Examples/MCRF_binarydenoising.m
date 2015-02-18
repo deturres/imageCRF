@@ -1,18 +1,18 @@
 function MCRF_binarydenoising(path_name)
 
 %% load the data
-traindir = [ path_name '/train/log1'];
+traindir = [ path_name '/train/log1/'];
 train_names = dir([traindir '*0.5_nonoise.png']); %  in case version in black use 0.5_origin_...
-labdir = [ path_name '/labels/log1'];
+labdir = [ path_name '/labels/log1/'];
 lab_names = dir([labdir '*0.5_GT_shrink.png']); % in case version in black (origin_nonoise_...) 
 
 % parameters of the problem
 N     = length(train_names);  % size of training images
-% N     = 4;  % size of training images random generated
-% siz   = 50; % size of training images random generated
 rho   = .5; % TRW edge appearance probability
 nvals = 2; % this problem is binary
 
+% N     = 4;  % size of training images random generated
+% siz   = 50; % size of training images random generated
 % % load a fake dataset or randomly genexrate it, Basically, making noisy images, then smoothing them to make the true (discrete) output values, and then adding noise to make the input.
 % x = cell(1,N);
 % for n=1:N
@@ -49,7 +49,6 @@ for n=1:N
     L = double(imread(([labdir lab_names(n).name])))/255;
     limg = rgb2gray(L);
     x{n}  = round(limg); % true label GT x
-%     x{n} = limg;
     figure('Name','Loading label...','NumberTitle','off'); imshow(x{n});
     
 end
@@ -76,7 +75,6 @@ end
 % make a graph for this CRF. (A simple pairwise grid)
 % siz = length(x{1});  % use this in case of squared images
 % model = gridmodel(siz,siz,nvals);
-
 [ly lx] = size(y{1});
 model = gridmodel(ly,lx,nvals);
 size(model.pairs);
@@ -144,7 +142,7 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 % The result is a structure array p. It contains two matrices. The first, F, determines the univariate potentials. 
 % Specifically, the vector of log-potentials for node i is given by multiplying F with the features for node i. 
 % Similarly, G determines the log-potentials for the edge interactions. 
-% Since there are no features, though, G just multiplies a constant of 1, meaning that the 4 entries of G are themselves the log-potentials for the four possible values of (x_i,x_j).
+% If there are no edge features, though, G just multiplies a constant of 1, meaning that the 4 entries of G are themselves the log-potentials for the four possible values of (x_i,x_j).
 
 
 %% %-----------------testing----------------%
@@ -158,13 +156,30 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 % feats  = [y(:) 1+0*x(:)];
 % labels = x+1;
 
-% using the very same image as testing image
-[ly lx] = size(y{1});
-yt=y{1};
-xt=x{1};
+testdir = [ path_name '/train/log2/'];
+test_names = dir([testdir '*0.5_2_nonoise.png']); %  in case version in black use 0.5_origin_...
+labtestdir = [ path_name '/labels/log2/'];
+labtest_names = dir([labtestdir '*0.5_2_GT_shrink.png']); % in case version in black (origin_nonoise_...) 
+
+I = double(imread(([testdir test_names(1).name])))/255;    
+img = rgb2gray(I);
+yt  = img; % input images y
+figure('Name','Loading input test...','NumberTitle','off'); imshow(yt);
+% load labels
+Label = double(imread(([labtestdir labtest_names(1).name])))/255;
+limg = rgb2gray(Label);
+xt  = round(limg); % true label GT x
+figure('Name','Loading label...','NumberTitle','off'); imshow(xt);
+
+% if using the very same image as testing image
+% yt=y{1};
+% xt=x{1};
+
+[ly lx] = size(yt);
+labelst = xt+1;
 [hor_efeats_ijt ver_efeats_ijt] = evaluate_pca(yt);
 featst  = [yt(:) hor_efeats_ijt(:) ver_efeats_ijt(:) 1+0*xt(:)];
-labelst = xt+1;
+
 [b_i b_ij] = eval_crf(p,featst,efeats,model,loss_spec,crf_type,rho);
 
 b_i_reshape = reshape(b_i',[ly lx nvals]);
@@ -175,7 +190,7 @@ error = mean(label_pred(:)~=labelst(:))
 % (case 0(black) = yes curb!)
 % computing the predicted labels considering value bigger than threshold t=0.75 as
 % label 1, otherwise as label 0(yes curb!)
-t = 0.95;
+t = 0.9;
 siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
 [i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t));
 for n=1:size(i)        
