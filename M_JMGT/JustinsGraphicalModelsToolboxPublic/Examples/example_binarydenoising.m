@@ -1,6 +1,6 @@
 function example_binarydenoising
 
-N     = 1;
+N     = 4;
 siz   = 50;
 rho   = .5;
 nvals = 2;
@@ -63,7 +63,6 @@ labels = x+1;
 b_i_r = reshape(b_i',[siz siz nvals]);
 
 [~,label_pred] = max(b_i_r,[],3);
-label_pred(:)
 error = mean(label_pred(:)~=labels(:))
 
 % visualizing final  predicted marginal

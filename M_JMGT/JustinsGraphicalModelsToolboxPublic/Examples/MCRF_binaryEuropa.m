@@ -1,4 +1,4 @@
-function MCRF_binarydenoising(path_name)
+function MCRF_binaryEuropa(path_name)
 
 %% load the data
 traindir = [ path_name '/train/log1/'];
@@ -7,17 +7,17 @@ labdir = [ path_name '/labels/log1/'];
 lab_names = dir([labdir '*0.5_GT.png']); % in case version in black (origin_nonoise_...) 
 
 % parameters of the problem
-N     = length(train_names);  % size of training/test images
+N     = length(train_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
 nvals = 2; % this problem is binary
 
-
-% in case of random generated data
 % N     = 4;  % size of training images random generated
 % siz   = 50; % size of training images random generated
 % % load a fake dataset or randomly genexrate it, Basically, making noisy images, then smoothing them to make the true (discrete) output values, and then adding noise to make the input.
 % x = cell(1,N);
 % for n=1:N
+%     
+%     % random generate data
 %     % x{n} = round(imfilter(rand(siz),fspecial('gaussian',50,7),'same','symmetric')); % true label x
 %     
 %     % load your own data as true label x, add noise to create the input y
@@ -72,15 +72,28 @@ for n=1:N
 %     imshow(reshape(feats{n}(:,1),size(y{1},1),size(y{1},2)));
 end
 
-%% creating the model and the edge features
-
 % make a graph for this CRF. (A simple pairwise grid)
 % siz = length(x{1});  % use this in case of squared images
 % model = gridmodel(siz,siz,nvals);
-[ly lx] = size(y{1});
-model = gridmodel(ly,lx,nvals);
 
-% edge features here (affect the smootheness of the result)
+%% creating the model
+% the images come in slightly different sizes, so we need to make many models
+% use a "hashing" strategy to not rebuild.  Start with empty giant array
+model_hash = repmat({[]},1000,1000);
+fprintf('building models...\n')
+for n=1:N
+    [ly lx lz] = size(ims{n});
+    if isempty(model_hash{ly,lx});
+        model_hash{ly,lx} = gridmodel(ly,lx,nvals);
+    end
+end
+models = cell(N,1);
+for n=1:N
+    [ly lx lz] = size(ims{n});
+    models{n} = model_hash{ly,lx};
+end
+
+%% edge features here (affect the smootheness of the result)
 
 fprintf('computing edge features...\n')
 edge_params = {{'const'},{'pca'},{'pairtypes'}};
@@ -148,23 +161,25 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 
 %% %-----------------testing----------------%
 
-% Now that we've trained the image, let's make a new test image, and get example marginals for it.
-% Make a test image; use siz as dimension if you are generating dataset or using fake pregenerated
-% x = round(imfilter(rand(ly,lx),fspecial('gaussian',50,7),'same','symmetric')); % label 
-% t = rand(size(x));
-% noiselevel = 1.25;
-% y = x.*(1-t.^noiselevel) + (1-x).*t.^noiselevel; % input
-% feats  = [y(:) 1+0*x(:)];
-% labels = x+1;
-
-% if using the very same image as testing image
-yt=y{1};
-xt=x{1};
+% if using the second log
+testdir = [ path_name '/train/log2/'];
+test_names = dir([testdir '*0.5_2_nonoise.png']); %  in case version in black use 0.5_origin_...
+labtestdir = [ path_name '/labels/log2/'];
+labtest_names = dir([labtestdir '*0.5_2_GT_shrink.png']); % in case version in black (origin_nonoise_...) 
+I = double(imread(([testdir test_names(1).name])))/255;    
+img = rgb2gray(I);
+yt  = img; % input images y
+figure('Name','Loading input test...','NumberTitle','off'); imshow(yt);
+% load labels
+Label = double(imread(([labtestdir labtest_names(1).name])))/255;
+limg = rgb2gray(Label);
+xt  = round(limg); % true label GT x
+figure('Name','Loading label...','NumberTitle','off'); imshow(xt);
 
 [ly lx] = size(yt);
 labelst = xt+1;
-% [hor_efeats_ijt ver_efeats_ijt] = evaluate_pca(yt);
-featst  = [yt(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*xt(:)];
+[hor_efeats_ijt ver_efeats_ijt] = evaluate_pca(yt);
+featst  = [yt(:) hor_efeats_ijt(:) ver_efeats_ijt(:) 1+0*xt(:)];
 
 [b_i b_ij] = eval_crf(p,featst,efeats,model,loss_spec,crf_type,rho);
 
@@ -176,7 +191,7 @@ error = mean(label_pred(:)~=labelst(:))
 % (case 0(black) = yes curb!)
 % computing the predicted labels considering value bigger than threshold t=0.75 as
 % label 1, otherwise as label 0(yes curb!)
-t = 0.95;
+t = 0.9;
 siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
 [i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t));
 for n=1:size(i)        
@@ -189,6 +204,7 @@ end
 % t = 0.80;
 % siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
 % [i,j] = ind2sub(siz,find(b_i_reshape(:,:,1)>t));
+% 
 % for n=1:size(i)        
 %     b_i_reshape(i(n),j(n),2) = 1.0;
 % end
