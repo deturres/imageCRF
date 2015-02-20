@@ -1,14 +1,14 @@
 function MCRF_binarydenoising(path_name)
 
 %% load the data
-traindir = [ path_name '/train/log1/'];
+traindir = [ path_name '/train/'];
 train_names = dir([traindir '*0.5_nonoise.png']); %  in case version in black use 0.5_origin_...
-labdir = [ path_name '/labels/log1/'];
+labdir = [ path_name '/labels/'];
 lab_names = dir([labdir '*0.5_GT.png']); % in case version in black (origin_nonoise_...) 
 
 % parameters of the problem
-N     = length(train_names);  % size of training/test images
-rho   = .5; % TRW edge appearance probability
+N     = 1; %length(train_names);  % size of training/test images
+rho   = .5; % (1 = loopy belief propagation) (.5 = tree-reweighted belief propagation)
 nvals = 2; % this problem is binary
 
 
@@ -59,8 +59,8 @@ end
 % The labels representation consists on value from of 1-nvals with 0 for unlabeled
 for n=1:N
     data = y{n};
-    [hor_efeats_ij ver_efeats_ij] = evaluate_pca(data);
-    feats{n}  = [y{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*x{n}(:)];
+    [hor_feats_ij ver_feats_ij] = evaluate_pca(data);
+    feats{n}  = [y{n}(:) hor_feats_ij(:) ver_feats_ij(:) 1+0*x{n}(:)];
     labels{n} = x{n}+1;
     
 %     % finding the first n max values(value<0.2)to be set to 1 (less weight to be of class 0)
@@ -83,7 +83,7 @@ model = gridmodel(ly,lx,nvals);
 % edge features here (affect the smootheness of the result)
 
 fprintf('computing edge features...\n')
-edge_params = {{'const'},{'pca'},{'pairtypes'}};
+edge_params = {{'const'},{'threshangle},{'pairtypes'}};
 
 % modify the computation of pca to use it as edge feature:
 efeats = [];
@@ -164,7 +164,7 @@ xt=x{1};
 [ly lx] = size(yt);
 labelst = xt+1;
 % [hor_efeats_ijt ver_efeats_ijt] = evaluate_pca(yt);
-featst  = [yt(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*xt(:)];
+featst  = [yt(:) hor_efeats_ij(:) ver_feats_ij(:) 1+0*xt(:)];
 
 [b_i b_ij] = eval_crf(p,featst,efeats,model,loss_spec,crf_type,rho);
 
@@ -215,7 +215,6 @@ title('input');
 subplot(N,3,1+  N); imshow(reshape(labelst(:)-1,ly,lx));
 title('true label');
 hold on; axes();
-subplot(N,3,1+  2*N);
-imshow(reshape(label_pred(:)-1,ly,lx)); % -1 to the label just in case they were computed with max()
+subplot(N,3,1+  2*N); imshow(reshape(label_pred(:)-1,ly,lx)); % -1 to the label just in case they were computed with max()
 title('predicted label');
 end

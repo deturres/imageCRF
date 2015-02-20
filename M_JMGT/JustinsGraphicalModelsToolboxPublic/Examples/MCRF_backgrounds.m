@@ -9,10 +9,10 @@ rho    = .5; % (1 = loopy belief propagation) (.5 = tree-reweighted belief propa
 ims_names = dir([imsdir '*.jpg']);
 lab_names = dir([labdir '*regions.txt']);
 
-% Thelabels from ICCV09 dataset are listed as an array of integers 0-7 with negative for unlabeled in a text file
+% The labels from ICCV09 dataset are listed as an array of integers 0-7 with negative for unlabeled in a text file
 % must convert to our representation of 1-8 with 0 for unlabeled
 
-N = 1; % length(ims_names);
+N = 6; % length(ims_names);
 ims    = cell(N,1);
 labels = cell(N,1);
 
@@ -25,7 +25,7 @@ parfor n=1:N
     % load data
     lab = importdata([labdir lab_names(n).name]);
     img = double(imread(([imsdir ims_names(n).name])))/255;
-    ims{n}  = img; % figure(1); imshow(ims{n})
+    ims{n}  = img;
     labels0{n} = max(0,lab+1);
     
     % compute features
@@ -69,7 +69,7 @@ fprintf('splitting data into a training and a test set...\n')
 % split everything into a training and test set
 
 k = 1;
-[who_train who_test] = kfold_sets(N,5,k);
+[who_train who_test] = kfold_sets(N,5,k)
 
 ims_train     = ims(who_train);
 feats_train   = feats(who_train);

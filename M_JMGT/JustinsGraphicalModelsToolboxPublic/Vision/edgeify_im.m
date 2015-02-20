@@ -17,6 +17,9 @@ for i=1:length(edge_params)
     fp = edge_params{i};
     if strcmp(fp{1},'const')
         nfeat = nfeat + 1;
+        % historical angle edge features
+    elseif strcmp(fp{1},'threshangle')
+        nfeat = nfeat + 1;
     elseif strcmp(fp{1},'diffthresh')
         %nfeat = nfeat + length(fp{2});
         nfeat = nfeat + nthresh;
@@ -33,9 +36,7 @@ for i=1:length(edge_params)
         nfeat = nfeat + 5;
     elseif strcmp(fp{1},'canny')
         nfeat = nfeat + 10;
-        % pca edge features
-    elseif strcmp(fp{1},'pca')
-        nfeat = nfeat + 2;
+
     elseif strcmp(fp{1},'pairtypes')
         if i~=length(edge_params)
             error('pairtypes must be last!');

@@ -1,13 +1,13 @@
 function MCRF_binaryEuropa(path_name)
 
 %% load the data
-traindir = [ path_name '/train/log1/'];
-train_names = dir([traindir '*0.5_nonoise.png']); %  in case version in black use 0.5_origin_...
-labdir = [ path_name '/labels/log1/'];
+imdir = [ path_name '/train/'];
+im_names = dir([imdir '*0.5_nonoise.png']); %  in case version in black use 0.5_origin_...
+labdir = [ path_name '/labels/'];
 lab_names = dir([labdir '*0.5_GT.png']); % in case version in black (origin_nonoise_...) 
 
 % parameters of the problem
-N     = length(train_names);  % size of training images
+N     = length(im_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
 nvals = 2; % this problem is binary
 
@@ -35,36 +35,38 @@ nvals = 2; % this problem is binary
 
 fprintf('loading data and computing feature maps...\n');
 % load true label x and input image from europa2_sidewalktetector
-x = cell(1,N);
+ims = cell(1,N);
+labels = cell(1,N);
 feats = cell(1,N);
 efeats = cell(1,N);
 for n=1:N
     
     % load input images
-    I = double(imread(([traindir train_names(n).name])))/255;    
+    I = double(imread(([imdir im_names(n).name])))/255;    
     img = rgb2gray(I);
-    y{n}  = img; % input images y
-    figure('Name','Loading input...','NumberTitle','off'); imshow(y{n});
+    ims{n}  = img; % input images x
+    figure('Name','Loading input...','NumberTitle','off'); imshow(ims{n});
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
     limg = rgb2gray(L);
-    x{n}  = round(limg); % true label GT x
-    figure('Name','Loading label...','NumberTitle','off'); imshow(x{n});
+    y{n}  = round(limg); % true label GT y
+    figure('Name','Loading label...','NumberTitle','off'); imshow(y{n});
     
 end
 
 %% make features and labels.
 
-% The features consist of simply the input image y itslef and a constant of one.
-% The labels representation consists on value from of 1-nvals with 0 for unlabeled
+% The features consist of simply the input image y itslef, the first two 
+% principal component for each cell in the center of  8-neighbours adjacent
+% cells, and a constant of one.
+% The labels representation consists on values from  1 to nvals, with 0 for unlabeled
 for n=1:N
-    data = y{n};
-    [hor_efeats_ij ver_efeats_ij] = evaluate_pca(data);
-    feats{n}  = [y{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*x{n}(:)];
-    labels{n} = x{n}+1;
+    [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
+    feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*y{n}(:)];
+    labels{n} = y{n}+1;
     
 %     % finding the first n max values(value<0.2)to be set to 1 (less weight to be of class 0)
-%     [r,c] = find(feats{n}<0.35);
+%     [r,c] = find(feats{n}(1,1)<0.35);
 %     for m=1:size(r)        
 %         feats{n}(r(m),c(m)) = 1.0;
 %     end
@@ -93,12 +95,12 @@ for n=1:N
     models{n} = model_hash{ly,lx};
 end
 
-%% edge features here (affect the smootheness of the result)
+%% edge features (affect the smootheness of the result) plus splitting train and test set
 
 fprintf('computing edge features...\n')
-edge_params = {{'const'},{'pca'},{'pairtypes'}};
+edge_params = {{'const'},{'diffthresh'},{'pairtypes'}};
 
-% modify the computation of pca to use it as edge feature:
+% add here the evaliuation of the historical angle between cells
 efeats = [];
 % efeats = cell(1,N);
 % parfor n=1:N
@@ -111,6 +113,24 @@ efeats = [];
 %     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(data);
 %     efeats{n} = [hor_efeats_ij(:) ver_efeats_ij(:) 1+0*x{n}(:)];
 % end
+
+fprintf('splitting data into a training and a test set...\n')
+% split everything into a training and test set
+
+k = 2;
+[who_train who_test] = kfold_sets(N,2,k)
+
+ims_train     = ims(who_train);
+feats_train   = feats(who_train);
+efeats_train  = []; % efeats(who_train);
+labels_train  = labels(who_train);
+models_train  = models(who_train);
+
+ims_test     = ims(who_test);
+feats_test   = feats(who_test);
+efeats_test  = []; % efeats(who_test);
+labels_test  = labels(who_test);
+models_test  = models(who_test);
 
     % visualization function.
     % This takes a cell array of predicted beliefs as input, and shows them to the screen during training.         
@@ -151,7 +171,10 @@ options.nvals       = nvals;
 
 % we actually optimize
 % This prints a visualization while running, using the viz function above.
-p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
+p = train_crf(feats_train,efeats_train,labels_train,models_train,loss_spec,crf_type,options);
+
+% if using the entire set to train
+% p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options);
 
 % The result is a structure array p. It contains two matrices. The first, F, determines the univariate potentials. 
 % Specifically, the vector of log-potentials for node i is given by multiplying F with the features for node i. 
@@ -161,77 +184,51 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 
 %% %-----------------testing----------------%
 
-% if using the second log
-testdir = [ path_name '/train/log2/'];
-test_names = dir([testdir '*0.5_2_nonoise.png']); %  in case version in black use 0.5_origin_...
-labtestdir = [ path_name '/labels/log2/'];
-labtest_names = dir([labtestdir '*0.5_2_GT_shrink.png']); % in case version in black (origin_nonoise_...) 
-I = double(imread(([testdir test_names(1).name])))/255;    
-img = rgb2gray(I);
-yt  = img; % input images y
-figure('Name','Loading input test...','NumberTitle','off'); imshow(yt);
-% load labels
-Label = double(imread(([labtestdir labtest_names(1).name])))/255;
-limg = rgb2gray(Label);
-xt  = round(limg); % true label GT x
-figure('Name','Loading label...','NumberTitle','off'); imshow(xt);
+fprintf('testing the model...\n')
+fprintf('get the marginals for test images...\n');
+for n=1:length(feats_test)
+    [ly lx] = size(labels_test{n});
+    [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test,models_test{n},loss_spec,crf_type,rho);
 
-[ly lx] = size(yt);
-labelst = xt+1;
-[hor_efeats_ijt ver_efeats_ijt] = evaluate_pca(yt);
-featst  = [yt(:) hor_efeats_ijt(:) ver_efeats_ijt(:) 1+0*xt(:)];
+    b_i_reshape = reshape(b_i',[ly lx nvals]);
 
-[b_i b_ij] = eval_crf(p,featst,efeats,model,loss_spec,crf_type,rho);
+    [~,label_pred] = max(b_i_reshape,[],3);
+    error = mean(label_pred(:)~=labels_test{n}(:))
 
-b_i_reshape = reshape(b_i',[ly lx nvals]);
+    % (case 0(black) = yes curb!)
+    % computing the predicted labels considering value bigger than threshold t=0.75 as
+    % label 1, otherwise as label 0(yes curb!)
+    t = 0.8;
+    siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
+    [i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t));
+    for t=1:size(i)        
+        b_i_reshape(i(t),j(t),2) = 0.0;
+    end
 
-[~,label_pred] = max(b_i_reshape,[],3);
-error = mean(label_pred(:)~=labelst(:))
+    % choose between max value (taking the corresponding index-->class) and
+    % mean value directly corresponding to the probability predicted label
+    [~,label_pred] = max(b_i_reshape,[],3);
+    % [label_pred] = mean(b_i_reshape,3);
+    % error = mean(label_pred(:)~=labelst(:))
+    
+    M = length(feats_test);
+    % visualizing final predicted marginal and label
+    figure('Name','Testing..marginal ','NumberTitle','off');
+    subplot(2,M,1    ); imshow(reshape(b_i(2,:),ly,lx));
+    title('predicted marginal belief(class1))');
+    subplot(2,M,1+  M); imshow(reshape(b_i(1,:),ly,lx));
+    title('predicted marginal belief(class0))');
 
-% (case 0(black) = yes curb!)
-% computing the predicted labels considering value bigger than threshold t=0.75 as
-% label 1, otherwise as label 0(yes curb!)
-t = 0.9;
-siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
-[i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t));
-for n=1:size(i)        
-    b_i_reshape(i(n),j(n),2) = 0.0;
+    figure('Name','Testing..predicted belief ','NumberTitle','off');
+    imshow(reshape(b_i(2,:),ly,lx));
+
+    figure('Name','Testing..labels','NumberTitle','off');
+    subplot(M,3,1); imshow(reshape(feats_test{n}(:,1),ly,lx));
+    title('input');
+    subplot(M,3,1+  M); imshow(reshape(labels_test{n}(:)-1,ly,lx));
+    title('true label');
+    hold on; axes();
+    subplot(M,3,1+  2*M); imshow(reshape(label_pred(:)-1,ly,lx)); % -1 to the label just in case they were computed with max()
+    title('predicted label');
 end
-
-% (case 1(white) = yes curb!) using origin image
-% computing the predicted labels considering value smaller than threshold t as
-% label 0, otherwise as label 1
-% t = 0.80;
-% siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
-% [i,j] = ind2sub(siz,find(b_i_reshape(:,:,1)>t));
-% 
-% for n=1:size(i)        
-%     b_i_reshape(i(n),j(n),2) = 1.0;
-% end
-
-% choose between max value (taking the corresponding index-->class) and
-% mean value directly corresponding to the probability predicted label
-[~,label_pred] = max(b_i_reshape,[],3);
-% [label_pred] = mean(b_i_reshape,3);
-% error = mean(label_pred(:)~=labelst(:))
-
-% visualizing final predicted marginal and label
-figure('Name','Testing..marginal ','NumberTitle','off');
-subplot(2,N,1    ); imshow(reshape(b_i(2,:),ly,lx));
-title('predicted marginal belief(class1))');
-subplot(2,N,1+  N); imshow(reshape(b_i(1,:),ly,lx));
-title('predicted marginal belief(class0))');
-
-figure('Name','Testing..predicted belief ','NumberTitle','off');
-imshow(reshape(b_i(2,:),ly,lx));
-
-figure('Name','Testing..labels','NumberTitle','off');
-subplot(N,3,1); imshow(reshape(featst(:,1),ly,lx));
-title('input');
-subplot(N,3,1+  N); imshow(reshape(labelst(:)-1,ly,lx));
-title('true label');
-hold on; axes();
-subplot(N,3,1+  2*N);
-imshow(reshape(label_pred(:)-1,ly,lx)); % -1 to the label just in case they were computed with max()
-title('predicted label');
 end
