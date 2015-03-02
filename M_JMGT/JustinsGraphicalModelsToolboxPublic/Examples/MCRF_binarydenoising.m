@@ -83,7 +83,7 @@ model = gridmodel(ly,lx,nvals);
 % edge features here (affect the smootheness of the result)
 
 fprintf('computing edge features...\n')
-edge_params = {{'const'},{'threshangle},{'pairtypes'}};
+edge_params = {{'const'},{'threshangle'},{'pairtypes'}};
 
 % modify the computation of pca to use it as edge feature:
 efeats = [];
@@ -102,20 +102,20 @@ efeats = [];
     % visualization function.
     % This takes a cell array of predicted beliefs as input, and shows them to the screen during training.         
     
-%     function viz(b_i)
-%         % here, b_i is a cell array of size nvals X nvars (univariate marginals)
-%         for n=1:N
-%             subplot(N,3,n    ); imshow(reshape(b_i{n}(2,:),ly,lx));
-%             title('predicted belief');
-%             subplot(N,3,n+  N); imshow(reshape(feats{n}(:,1),ly,lx));
-%             title('input noisy image');
-%             subplot(N,3,n+2*N); imshow(reshape(labels{n}-1,ly,lx));
-%             title('label');
-%             
-%         end
-%         xlabel('top: marginals  middle: input  bottom: labels')
-%         drawnow
-%     end
+    function viz(b_i)
+        % here, b_i is a cell array of size nvals X nvars (univariate marginals)
+        for n=1:N
+            subplot(N,3,n    ); imshow(reshape(b_i{n}(2,:),ly,lx));
+            title('predicted belief');
+            subplot(N,3,n+  N); imshow(reshape(feats{n}(:,1),ly,lx));
+            title('input noisy image');
+            subplot(N,3,n+2*N); imshow(reshape(labels{n}-1,ly,lx));
+            title('label');
+            
+        end
+        xlabel('top: marginals  middle: input  bottom: labels')
+        drawnow
+    end
 
 %% %-----------------training----------------%
 
@@ -129,7 +129,7 @@ loss_spec = 'trunc_cl_trw_5'; % parameter learning and inference
 % some parameters for the training optimization
 crf_type  = 'linear_linear'; 
 options.derivative_check = 'off';
-% options.viz         = @viz; % function for visualization
+options.viz         = @viz; % function for visualization
 options.rho         = rho;
 options.print_times = 1;
 options.nvals       = nvals;
@@ -149,6 +149,7 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 %% %-----------------testing----------------%
 
 % Now that we've trained the image, let's make a new test image, and get example marginals for it.
+
 % Make a test image; use siz as dimension if you are generating dataset or using fake pregenerated
 % x = round(imfilter(rand(ly,lx),fspecial('gaussian',50,7),'same','symmetric')); % label 
 % t = rand(size(x));
@@ -164,7 +165,7 @@ xt=x{1};
 [ly lx] = size(yt);
 labelst = xt+1;
 % [hor_efeats_ijt ver_efeats_ijt] = evaluate_pca(yt);
-featst  = [yt(:) hor_efeats_ij(:) ver_feats_ij(:) 1+0*xt(:)];
+featst  = [yt(:) hor_feats_ij(:) ver_feats_ij(:) 1+0*xt(:)];
 
 [b_i b_ij] = eval_crf(p,featst,efeats,model,loss_spec,crf_type,rho);
 
@@ -176,8 +177,7 @@ error = mean(label_pred(:)~=labelst(:))
 % (case 0(black) = yes curb!)
 % computing the predicted labels considering value bigger than threshold t=0.75 as
 % label 1, otherwise as label 0(yes curb!)
-t = 0.95;
-siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
+t = 0.9; siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
 [i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t));
 for n=1:size(i)        
     b_i_reshape(i(n),j(n),2) = 0.0;

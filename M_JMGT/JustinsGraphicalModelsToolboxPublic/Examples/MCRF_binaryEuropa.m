@@ -1,6 +1,6 @@
 function MCRF_binaryEuropa(path_name)
 
-%% load the data
+%% load the data and computing labels and features map
 imdir = [ path_name '/train/'];
 im_names = dir([imdir '*0.5_nonoise.png']); %  in case version in black use 0.5_origin_...
 labdir = [ path_name '/labels/'];
@@ -53,8 +53,6 @@ for n=1:N
     figure('Name','Loading label...','NumberTitle','off'); imshow(y{n});
     
 end
-
-%% make features and labels.
 
 % The features consist of simply the input image y itslef, the first two 
 % principal component for each cell in the center of  8-neighbours adjacent
@@ -198,11 +196,10 @@ for n=1:length(feats_test)
     % (case 0(black) = yes curb!)
     % computing the predicted labels considering value bigger than threshold t=0.75 as
     % label 1, otherwise as label 0(yes curb!)
-    t = 0.8;
-    siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
+    t = 0.9; siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
     [i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t));
-    for t=1:size(i)        
-        b_i_reshape(i(t),j(t),2) = 0.0;
+    for h=1:size(i)        
+        b_i_reshape(i(h),j(h),2) = 0.0;
     end
 
     % choose between max value (taking the corresponding index-->class) and
