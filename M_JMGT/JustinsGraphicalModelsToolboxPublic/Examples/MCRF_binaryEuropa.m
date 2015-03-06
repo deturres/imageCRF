@@ -2,9 +2,9 @@ function MCRF_binaryEuropa(path_name)
 
 %% load the data and computing labels and features map
 imdir = [ path_name '/train/'];
-im_names = dir([imdir '*0.5_nonoise.png']); %  in case version in black use 0.5_origin_...
+im_names = dir([imdir '*.png']); % 0.5 in case of entire log, in case version in black use 0.5_origin_...
 labdir = [ path_name '/labels/'];
-lab_names = dir([labdir '*0.5_GT.png']); % in case version in black (origin_nonoise_...) 
+lab_names = dir([labdir '*_GT.png']); % 0.5 in case of entire log, in case version in black (origin_nonoise_...) 
 
 % parameters of the problem
 N     = length(im_names);  % size of training images
@@ -115,8 +115,13 @@ efeats = [];
 fprintf('splitting data into a training and a test set...\n')
 % split everything into a training and test set
 
-k = 2;
-[who_train who_test] = kfold_sets(N,2,k)
+% if one train one test: 
+% k = 2;
+% [who_train who_test] = kfold_sets(N,2,k)
+
+k = 1;
+[who_train who_test] = kfold_sets(N,7,k)
+
 
 ims_train     = ims(who_train);
 feats_train   = feats(who_train);
