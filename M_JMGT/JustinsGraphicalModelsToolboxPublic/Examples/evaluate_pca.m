@@ -22,7 +22,7 @@ for i=2:r-1
     for j=2:c-1
         % computing neighbours for cell d(i,j) (center of the matrix)        
         % d_neighbours(2,2) = d(i,j);
-
+        fprintf('.');
         index = sub2ind(size(data), i, j);
         [Iadj , Radj, Nfound] = neighbourND(index, size(data)); 
         if Nfound < 8
@@ -32,6 +32,9 @@ for i=2:r-1
         [I_adj J_adj] = ind2sub(size(data),Iadj);
         index_matrix = [I_adj' J_adj'];
         index_matrix = [index_matrix(1:4,:); i j ; index_matrix(5:end,:)];
+        
+        fprintf(',\n');
+
         d_adj = ones(1,9);
         for rr=1:size(index_matrix,1)
             d_adj(rr)=data(index_matrix(rr,1),index_matrix(rr,2));
@@ -60,6 +63,9 @@ for i=2:r-1
         hor_efeats_ij(i,j) = hor;
         ver_efeats_ij(i,j) = ver;
     end
+    
+    fprintf('end row\n');
+
 end
 
 

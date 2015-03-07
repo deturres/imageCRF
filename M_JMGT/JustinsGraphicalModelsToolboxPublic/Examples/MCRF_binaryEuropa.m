@@ -7,7 +7,7 @@ labdir = [ path_name '/labels/'];
 lab_names = dir([labdir '*_GT.png']); % 0.5 in case of entire log, in case version in black (origin_nonoise_...) 
 
 % parameters of the problem
-N     = length(im_names);  % size of training images
+N     = 5 %length(im_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
 nvals = 2; % this problem is binary
 
@@ -45,23 +45,27 @@ for n=1:N
     I = double(imread(([imdir im_names(n).name])))/255;    
     img = rgb2gray(I);
     ims{n}  = img; % input images x
-    figure('Name','Loading input...','NumberTitle','off'); imshow(ims{n});
+%     figure('Name','Loading input...','NumberTitle','off'); imshow(ims{n});
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
     limg = rgb2gray(L);
-    y{n}  = round(limg); % true label GT y
-    figure('Name','Loading label...','NumberTitle','off'); imshow(y{n});
+    l{n}  = round(limg); % true label GT l
+%     figure('Name','Loading label...','NumberTitle','off'); imshow(y{n});
     
 end
 
+%% 
 % The features consist of simply the input image y itslef, the first two 
 % principal component for each cell in the center of  8-neighbours adjacent
 % cells, and a constant of one.
 % The labels representation consists on values from  1 to nvals, with 0 for unlabeled
 for n=1:N
-    [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
-    feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*y{n}(:)];
-    labels{n} = y{n}+1;
+    fprintf('new image\n');
+%     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
+    feats{n}  = [ims{n}(:)  1+0*l{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
+    labels{n} = l{n}+1;
+    fprintf('end previous image\n');
+
     
 %     % finding the first n max values(value<0.2)to be set to 1 (less weight to be of class 0)
 %     [r,c] = find(feats{n}(1,1)<0.35);
@@ -120,7 +124,7 @@ fprintf('splitting data into a training and a test set...\n')
 % [who_train who_test] = kfold_sets(N,2,k)
 
 k = 1;
-[who_train who_test] = kfold_sets(N,7,k)
+[who_train who_test] = kfold_sets(N,4,k)
 
 
 ims_train     = ims(who_train);

@@ -5,7 +5,7 @@ clear all
 % path_name = './Dataset/fakeData/';
 % path_name = './Dataset/europaData/entire_log/res50/'
 % MCRF_binarydenoising(path_name);
-path_name = './Dataset/europaData/gridmaps';
+path_name = './Dataset/europaData/gridmaps/';
 MCRF_binaryEuropa(path_name);
 
 %% 
