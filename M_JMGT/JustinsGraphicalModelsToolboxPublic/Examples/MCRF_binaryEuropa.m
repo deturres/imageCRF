@@ -7,9 +7,10 @@ labdir = [ path_name '/labels/'];
 lab_names = dir([labdir '*_GT.png']); % 0.5 in case of entire log, in case version in black (origin_nonoise_...) 
 
 % parameters of the problem
-N     = 5 %length(im_names);  % size of training images
+N     = length(im_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
 nvals = 2; % this problem is binary
+rez    = .6; % how much to reduce resolution
 
 % N     = 4;  % size of training images random generated
 % siz   = 50; % size of training images random generated
@@ -36,6 +37,7 @@ nvals = 2; % this problem is binary
 fprintf('loading data and computing feature maps...\n');
 % load true label x and input image from europa2_sidewalktetector
 ims = cell(1,N);
+labels0 = cell(1,N);
 labels = cell(1,N);
 feats = cell(1,N);
 efeats = cell(1,N);
@@ -49,8 +51,8 @@ for n=1:N
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
     limg = rgb2gray(L);
-    l{n}  = round(limg); % true label GT l
-%     figure('Name','Loading label...','NumberTitle','off'); imshow(y{n});
+    labels0{n}  = round(limg); % true label GT l
+%     figure('Name','Loading label...','NumberTitle','off'); imshow(labels0{n});
     
 end
 
@@ -59,11 +61,18 @@ end
 % principal component for each cell in the center of  8-neighbours adjacent
 % cells, and a constant of one.
 % The labels representation consists on values from  1 to nvals, with 0 for unlabeled
+
+
 for n=1:N
     fprintf('new image\n');
-%     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
-    feats{n}  = [ims{n}(:)  1+0*l{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
-    labels{n} = l{n}+1;
+    % reduce resolution for speed, in case we use the different gridmaps images
+    % instead of the already resolution-reduced entire log
+    ims{n}    = imresize(ims{n}   ,rez,'bilinear');
+    labels{n} = labels0{n}+1;
+    labels{n} = imresize(labels{n},rez,'nearest');
+    [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
+    feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
+    
     fprintf('end previous image\n');
 
     
@@ -76,13 +85,12 @@ for n=1:N
 %     imshow(reshape(feats{n}(:,1),size(y{1},1),size(y{1},2)));
 end
 
-% make a graph for this CRF. (A simple pairwise grid)
-% siz = length(x{1});  % use this in case of squared images
-% model = gridmodel(siz,siz,nvals);
-
 %% creating the model
 % the images come in slightly different sizes, so we need to make many models
 % use a "hashing" strategy to not rebuild.  Start with empty giant array
+
+
+
 model_hash = repmat({[]},1000,1000);
 fprintf('building models...\n')
 for n=1:N
@@ -119,25 +127,29 @@ efeats = [];
 fprintf('splitting data into a training and a test set...\n')
 % split everything into a training and test set
 
-% if one train one test: 
+% with entire logs 1 and 2,if one(log2) train, one(log1) test: 
 % k = 2;
 % [who_train who_test] = kfold_sets(N,2,k)
 
 k = 1;
-[who_train who_test] = kfold_sets(N,4,k)
+[who_train who_test] = kfold_sets(N,15,k)
 
 
 ims_train     = ims(who_train);
 feats_train   = feats(who_train);
 efeats_train  = []; % efeats(who_train);
 labels_train  = labels(who_train);
+labels0_train = labels0(who_train);
 models_train  = models(who_train);
+imshow(ims_train{1})
 
 ims_test     = ims(who_test);
 feats_test   = feats(who_test);
 efeats_test  = []; % efeats(who_test);
 labels_test  = labels(who_test);
+labels0_test = labels0(who_test);
 models_test  = models(who_test);
+imshow(ims_test{:})
 
     % visualization function.
     % This takes a cell array of predicted beliefs as input, and shows them to the screen during training.         
@@ -202,10 +214,18 @@ for n=1:length(feats_test)
     [~,label_pred] = max(b_i_reshape,[],3);
     error = mean(label_pred(:)~=labels_test{n}(:))
 
+    % another way to compute the pixelwise error
+    label0 = labels0_test{n};
+    % upsample predicted images to full resolution
+    label_pred  = imresize(label_pred,size(label0),'nearest');
+    E(n) = sum(label_pred(label0(:)>0)~=label0(label0(:)>0));
+    T(n) = sum(label0(:)>0);
+    fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
+
     % (case 0(black) = yes curb!)
     % computing the predicted labels considering value bigger than threshold t=0.75 as
     % label 1, otherwise as label 0(yes curb!)
-    t = 0.9; siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
+    t = 0.85; siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
     [i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t));
     for h=1:size(i)        
         b_i_reshape(i(h),j(h),2) = 0.0;
@@ -215,7 +235,6 @@ for n=1:length(feats_test)
     % mean value directly corresponding to the probability predicted label
     [~,label_pred] = max(b_i_reshape,[],3);
     % [label_pred] = mean(b_i_reshape,3);
-    % error = mean(label_pred(:)~=labelst(:))
     
     M = length(feats_test);
     % visualizing final predicted marginal and label

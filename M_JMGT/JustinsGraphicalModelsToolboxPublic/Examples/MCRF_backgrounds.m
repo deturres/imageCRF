@@ -134,7 +134,6 @@ for n=1:length(feats_test)
     [~,x_pred] = max(b_i,[],1);
     x_pred = reshape(x_pred,ly,lx);
     
-    [ly lx lz] = size(labels0_test{n});
     x       = labels0_test{n};
     % upsample predicted images to full resolution
     x_pred  = imresize(x_pred,size(x),'nearest');
