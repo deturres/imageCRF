@@ -15,9 +15,11 @@ nvals = 2; % this problem is binary
 % in case of random generated data
 % N     = 4;  % size of training images random generated
 % siz   = 50; % size of training images random generated
-% % load a fake dataset or randomly genexrate it, Basically, making noisy images, then smoothing them to make the true (discrete) output values, and then adding noise to make the input.
+% % load a fake dataset or randomly generate it, Basically, making noisy images, then smoothing them to make the true (discrete) output values, and then adding noise to make the input.
 % x = cell(1,N);
 % for n=1:N
+% 
+%     % random generate data
 %     % x{n} = round(imfilter(rand(siz),fspecial('gaussian',50,7),'same','symmetric')); % true label x
 %     
 %     % load your own data as true label x, add noise to create the input y

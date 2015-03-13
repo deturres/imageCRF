@@ -2,37 +2,15 @@ function MCRF_binaryEuropa(path_name)
 
 %% load the data and computing labels and features map
 imdir = [ path_name '/train/'];
-im_names = dir([imdir '*.png']); % 0.5 in case of entire log, in case version in black use 0.5_origin_...
+im_names = dir([imdir '*0.5.png']); % '*.png'. Just in case of entire log: *0.5.png, in case version in black use 0.5_origin_...png
 labdir = [ path_name '/labels/'];
-lab_names = dir([labdir '*_GT.png']); % 0.5 in case of entire log, in case version in black (origin_nonoise_...) 
+lab_names = dir([labdir '*_GT.png']); % in case version in black (origin_nonoise_...png) 
 
 % parameters of the problem
 N     = length(im_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
 nvals = 2; % this problem is binary
 rez    = .6; % how much to reduce resolution
-
-% N     = 4;  % size of training images random generated
-% siz   = 50; % size of training images random generated
-% % load a fake dataset or randomly genexrate it, Basically, making noisy images, then smoothing them to make the true (discrete) output values, and then adding noise to make the input.
-% x = cell(1,N);
-% for n=1:N
-%     
-%     % random generate data
-%     % x{n} = round(imfilter(rand(siz),fspecial('gaussian',50,7),'same','symmetric')); % true label x
-%     
-%     % load your own data as true label x, add noise to create the input y
-%     I = double(imread(([traindir train_names(n).name])));
-%     img = rgb2gray(I);
-%     x{n}  = round(img); % true label x
-%     imshow(x{n})
-%     
-%     % extremely difficult noise pattern -- from perturbation paper
-%     t = rand(size(x{n})); 
-%     noiselevel = 1.25; % in perturbation paper 1.25
-%     y{n} = x{n}.*(1-t.^noiselevel) + (1-x{n}).*t.^noiselevel; % noisy input y
-%     
-% end
 
 fprintf('loading data and computing feature maps...\n');
 % load true label x and input image from europa2_sidewalktetector
@@ -55,6 +33,7 @@ for n=1:N
 %     figure('Name','Loading label...','NumberTitle','off'); imshow(labels0{n});
     
 end
+
 
 %% 
 % The features consist of simply the input image y itslef, the first two 
@@ -128,11 +107,11 @@ fprintf('splitting data into a training and a test set...\n')
 % split everything into a training and test set
 
 % with entire logs 1 and 2,if one(log2) train, one(log1) test: 
-% k = 2;
-% [who_train who_test] = kfold_sets(N,2,k)
+k = 2;
+[who_train who_test] = kfold_sets(N,2,k)
 
-k = 1;
-[who_train who_test] = kfold_sets(N,15,k)
+% k = 1;
+% [who_train who_test] = kfold_sets(N,15,k)
 
 
 ims_train     = ims(who_train);
