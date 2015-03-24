@@ -64,13 +64,13 @@ for n=1:N
 %     imshow(reshape(feats{n}(:,1),size(y{1},1),size(y{1},2)));
 end
 
-%% creating the model
+%% creating the modelyes
 % the images come in slightly different sizes, so we need to make many models
 % use a "hashing" strategy to not rebuild.  Start with empty giant array
 
 
 
-model_hash = repmat({[]},1000,1000);
+model_hash = repmat({[]},1500,1500);
 fprintf('building models...\n')
 for n=1:N
     [ly lx lz] = size(ims{n});
