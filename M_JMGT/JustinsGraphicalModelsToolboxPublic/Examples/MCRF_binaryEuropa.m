@@ -4,12 +4,12 @@ function MCRF_binaryEuropa(path_name)
 imdir = [ path_name '/train/'];
 im_names = dir([imdir '*.png']); % '*.png'. Just in case of entire log: *0.5.png, in case version in black use 0.5_origin_...png
 labdir = [ path_name '/labels/'];
-lab_names = dir([labdir '*_GT.png']); % in case version in black (origin_nonoise_...png) 
+lab_names = dir([labdir '*multi_GT.png']); % in case version in black (origin_nonoise_...png) 
 
 % parameters of the problem
 N     = length(im_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
-nvals = 2; % this problem is binary
+nvals = 3; % this problem is binary
 rez    = .6; % how much to reduce resolution
 
 fprintf('loading data and computing feature maps...\n');
@@ -25,12 +25,12 @@ for n=1:N
     I = double(imread(([imdir im_names(n).name])))/255;    
     img = rgb2gray(I);
     ims{n}  = img; % input images x
-%     figure('Name','Loading input...','NumberTitle','off'); imshow(ims{n});
+    figure('Name','Loading input...','NumberTitle','off'); imshow(ims{n});
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
-    limg = rgb2gray(L);
-    labels0{n}  = round(limg); % true label GT l
-%     figure('Name','Loading label...','NumberTitle','off'); imshow(labels0{n});
+%     limg = rgb2gray(L);
+    labels0{n}  = round(L); % true label GT l
+    figure('Name','Loading label...','NumberTitle','off'); imshow(labels0{n});
     
 end
 
@@ -47,10 +47,10 @@ for n=1:N
     % reduce resolution for speed, in case we use the different gridmaps images
     % instead of the already resolution-reduced entire log
     ims{n}    = imresize(ims{n}   ,rez,'bilinear');
-    labels{n} = labels0{n}+1;
+    labels{n} = max(0,labels0{n}+1); % 0 means unlebeled
     labels{n} = imresize(labels{n},rez,'nearest');
     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
-    feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
+    feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*ims{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
     
     fprintf('end previous image\n');
 
