@@ -2,15 +2,16 @@ function MCRF_binaryEuropa(path_name)
 
 %% load the data and computing labels and features map
 imdir = [ path_name '/train/'];
-im_names = dir([imdir '*0.5.png']); % '*.png'. Just in case of entire_log dataset: *0.5.png, in case version in black use 0.5_origin_...png
+im_names = dir([imdir '*.png']); % '*.png'. Just in case of entire log: *0.5.png, in case version in black use 0.5_origin_...png
 labdir = [ path_name '/labels/'];
-lab_names = dir([labdir '*_GT_notAuto.png']); % in case version in black (origin_nonoise_...png) 
+lab_names = dir([labdir '*multi_GT.png']);
 
 % parameters of the problem
 N     = length(im_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
-nvals = 2; % this problem is binary
+nvals = 3; % curb/wall/background 0 is unlabeled
 rez    = .6; % how much to reduce resolution
+cmap = [1 1 1; 1 0 0 ; 0 1 0; 0 0 1]; % to represent the label
 
 fprintf('loading data and computing feature maps...\n');
 % load true label x and input image from europa2_sidewalktetector
@@ -25,12 +26,12 @@ for n=1:N
     I = double(imread(([imdir im_names(n).name])))/255;    
     img = rgb2gray(I);
     ims{n}  = img; % input images x
-%     figure('Name','Loading input...','NumberTitle','off'); imshow(ims{n});
+    figure('Name','Loading input...','NumberTitle','off'); imshow(ims{n});
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
-    limg = rgb2gray(L);
-    labels0{n}  = round(limg); % true label GT l
-%     figure('Name','Loading label...','NumberTitle','off'); imshow(labels0{n});
+%     limg = rgb2gray(L);
+    labels0{n}  = L; % true label GT
+    figure('Name','Loading label...','NumberTitle','off'); imshow(labels0{n});
     
 end
 
@@ -41,17 +42,34 @@ end
 % cells, and a constant of one.
 % The labels representation consists on values from  1 to nvals, with 0 for unlabeled
 
-
 for n=1:N
     fprintf('new image\n');
-    % reduce resolution for speed, in case we use the different gridmaps images
-    % instead of the already resolution-reduced entire log
+    % reduce resolution for speed, in case we use the different GRIDMAPS images
     ims{n}    = imresize(ims{n}   ,rez,'bilinear');
-    labels{n} = labels0{n}+1; % 0 means not labeled
+    % compute the label as a ly*lx matrix, whose values are classes depending on the 3-rgb channels original labels0 images
+    [ly lx lz] = size(labels0{n});
+    l = zeros(ly,lx);
+    for i=1:ly
+        for j=1:lx
+            l_r = labels0{n}(i,j,1);
+            l_b = labels0{n}(i,j,3);
+            if(l_r>0.8 & l_b<0.8)
+                l(i,j) = 2; % red means curb side of the sidewalk
+            elseif(l_b>0.8 & l_r<0.8)
+                l(i,j) = 3; % blue means wall side of the sidewalk
+             else
+                l(i,j) = 1; % background
+            end
+        end
+    end
+    figure(n);
+    colormap(cmap); miximshow(reshape(l,ly,lx),nvals);
+    labels{n} = l;
+    fprintf('label computed\n');
     labels{n} = imresize(labels{n},rez,'nearest');
-%     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
-%     feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
-    
+    [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
+    feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*ims{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
+    fprintf('features computed\n');
     fprintf('end previous image\n');
 
     
@@ -64,13 +82,11 @@ for n=1:N
 %     imshow(reshape(feats{n}(:,1),size(y{1},1),size(y{1},2)));
 end
 
-%% creating the model
+%% creating the modelyes
 % the images come in slightly different sizes, so we need to make many models
 % use a "hashing" strategy to not rebuild.  Start with empty giant array
 
-
-
-model_hash = repmat({[]},1000,1000);
+model_hash = repmat({[]},1200,1200);
 fprintf('building models...\n')
 for n=1:N
     [ly lx lz] = size(ims{n});
@@ -107,11 +123,13 @@ fprintf('splitting data into a training and a test set...\n')
 % split everything into a training and test set
 
 % with entire logs 1 and 2,if one(log2) train, one(log1) test: 
-% k = 2;
-% [who_train who_test] = kfold_sets(N,2,k)
-
 k = 2;
-[who_train who_test] = kfold_sets(N,N,k)
+[who_train who_test] = kfold_sets(N,2,k)
+
+% with gridmaps for each log 1 and 2, the second parameter is how many training images you want to take into account 
+
+% k = 2;
+% [who_train who_test] = kfold_sets(N,N,k)
 
 
 ims_train     = ims(who_train);
@@ -120,7 +138,7 @@ efeats_train  = []; % efeats(who_train);
 labels_train  = labels(who_train);
 labels0_train = labels0(who_train);
 models_train  = models(who_train);
-imshow(ims_train{1})
+% imshow(ims_train{1})
 
 ims_test     = ims(who_test);
 feats_test   = feats(who_test);
@@ -128,7 +146,7 @@ efeats_test  = []; % efeats(who_test);
 labels_test  = labels(who_test);
 labels0_test = labels0(who_test);
 models_test  = models(who_test);
-imshow(ims_test{:})
+% imshow(ims_test{:})
 
     % visualization function.
     % This takes a cell array of predicted beliefs as input, and shows them to the screen during training.         
@@ -191,14 +209,16 @@ for n=1:length(feats_test)
     b_i_reshape = reshape(b_i',[ly lx nvals]);
 
     [~,label_pred] = max(b_i_reshape,[],3);
-    error = mean(label_pred(:)~=labels_test{n}(:))
+    error_downsample = mean(label_pred(:)~=labels_test{n}(:))
 
-    % another way to compute the pixelwise error
+    % Accuracy: pixelwise error
     label0 = labels0_test{n};
     % upsample predicted images to full resolution
     label_pred  = imresize(label_pred,size(label0),'nearest');
     E(n) = sum(label_pred(label0(:)>0)~=label0(label0(:)>0));
     T(n) = sum(label0(:)>0);
+    error = mean(label_pred(:)~=labels0(:));
+    fprintf('error on test data(pred~GT: %f \n', error)
     fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
 
     % (case 0(black) = yes curb!)

@@ -3,11 +3,12 @@ clear all
 
 % a simply CRF for binarydenoising, with gridmodel and noisy input
 % path_name = './Dataset/fakeData/';
-% path_name = './Dataset/europaData/entire_log/res50/'
+% path_name = './Dataset/europaData/entire_log/res50/';
 % path_name = './Dataset/europaData/gridmaps/old_features/';
 path_name = './Dataset/europaData/entire_log_new/res50/';
-% MCRF_binarydenoising(path_name); //when using just one image for training (same one for testing)
-MCRF_binaryEuropa(path_name);
+% MCRF_binarydenoising(path_name); % when using binary segmentation with just one image (for training, testing on the very same one, just to plot the results at the end instead of )
+% MCRF_binaryEuropa(path_name);  % when using binary segmentation with two or more training examples (entire log or gridmaps)
+MCRF_multiEuropa(path_name); % when using multi segmentation with two or more training examples
 
 %% 
 % clc
