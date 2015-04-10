@@ -9,7 +9,7 @@ lab_names = dir([labdir '*multi_GT.png']);
 % parameters of the problem
 N     = length(im_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
-nvals = 3; % curb/wall/background 0 is unlabeled
+nvals = 3; % curb/sidewalkWall/background 0 is unlabeled
 rez    = .6; % how much to reduce resolution
 cmap = [1 1 1; 1 0 0 ; 0 1 0; 0 0 1]; % to represent the label
 
@@ -64,15 +64,12 @@ for n=1:N
     end
     figure(n);
     colormap(cmap); miximshow(reshape(l,ly,lx),nvals);
-    labels{n} = l;
+    labels0{n} = l;
     fprintf('label computed\n');
-    labels{n} = imresize(labels{n},rez,'nearest');
+    labels{n} = imresize(labels0{n},rez,'nearest');
     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
-    feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*ims{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
-    fprintf('features computed\n');
-    fprintf('end previous image\n');
-
-    
+    feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
+    fprintf('features computed\n');    
 %     % finding the first n max values(value<0.2)to be set to 1 (less weight to be of class 0)
 %     [r,c] = find(feats{n}(1,1)<0.35);
 %     for m=1:size(r)        
@@ -81,6 +78,7 @@ for n=1:N
 %     figure('Name','Loading feature without extreme positive value...','NumberTitle','off'); 
 %     imshow(reshape(feats{n}(:,1),size(y{1},1),size(y{1},2)));
 end
+    fprintf('end dataset\n');
 
 %% creating the modelyes
 % the images come in slightly different sizes, so we need to make many models
@@ -213,12 +211,14 @@ for n=1:length(feats_test)
 
     % Accuracy: pixelwise error
     label0 = labels0_test{n};
+    size(label0)
+    size(label_pred)
     % upsample predicted images to full resolution
     label_pred  = imresize(label_pred,size(label0),'nearest');
     E(n) = sum(label_pred(label0(:)>0)~=label0(label0(:)>0));
     T(n) = sum(label0(:)>0);
-    error = mean(label_pred(:)~=labels0(:));
-    fprintf('error on test data(pred~GT: %f \n', error)
+    error = mean(label_pred(:)~=label0(:))
+    fprintf('error on test data,pred~GT: %f \n', error)
     fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
 
     % (case 0(black) = yes curb!)
@@ -237,22 +237,26 @@ for n=1:length(feats_test)
     
     M = length(feats_test);
     % visualizing final predicted marginal and label
-    figure('Name','Testing..marginal ','NumberTitle','off');
-    subplot(2,M,1    ); imshow(reshape(b_i(2,:),ly,lx));
-    title('predicted marginal belief(class1))');
-    subplot(2,M,1+  M); imshow(reshape(b_i(1,:),ly,lx));
-    title('predicted marginal belief(class0))');
-
-    figure('Name','Testing..predicted belief ','NumberTitle','off');
-    imshow(reshape(b_i(2,:),ly,lx));
+    figure('Name','Testing..marginal','NumberTitle','off');
+    subplot(M,3,1); imshow(reshape(b_i(1,:),ly,lx));
+    title('predicted marginal belief(class 1-background))');
+    subplot(M,3,1+   M); imshow(reshape(b_i(2,:),ly,lx));
+    title('predicted marginal belief(class 2-curb))');
+    subplot(M,3,1+ 2*M); imshow(reshape(b_i(3,:),ly,lx));
+    title('predicted marginal belief(class 3-sidewalkWall))');
 
     figure('Name','Testing..labels','NumberTitle','off');
-    subplot(M,3,1); imshow(reshape(feats_test{n}(:,1),ly,lx));
+%     subplot(M,3,1); 
+    imshow(reshape(feats_test{n}(:,1),ly,lx));
     title('input');
-    subplot(M,3,1+  M); imshow(reshape(labels_test{n}(:)-1,ly,lx));
+    
+    figure('Name','Testing..labels true and predicted','NumberTitle','off');
+    colormap(cmap); 
+    subplot(M,2,1   ); miximshow(reshape(labels_test{n}(:),ly,lx),nvals);
     title('true label');
     hold on; axes();
-    subplot(M,3,1+  2*M); imshow(reshape(label_pred(:)-1,ly,lx)); % -1 to the label just in case they were computed with max()
+    subplot(M,2,1+ M); miximshow(reshape(label_pred(:),ly,lx),nvals);
     title('predicted label');
+    % subplot(M,3,1+ 2*M);  imshow(reshape(label_pred(:),ly,lx)); % -1 to the label just in case they were computed with max()
 end
 end
