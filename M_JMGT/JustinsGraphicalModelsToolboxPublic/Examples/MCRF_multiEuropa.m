@@ -4,14 +4,14 @@ function MCRF_binaryEuropa(path_name)
 imdir = [ path_name '/train/'];
 im_names = dir([imdir '*.png']); % '*.png'. Just in case of entire log: *0.5.png, in case version in black use 0.5_origin_...png
 labdir = [ path_name '/labels/'];
-lab_names = dir([labdir '*multi_GT.png']);
+lab_names = dir([labdir '*multi3_GT.png']);
 
 % parameters of the problem
 N     = length(im_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
 nvals = 3; % curb/sidewalkWall/background 0 is unlabeled
 rez    = .6; % how much to reduce resolution
-cmap = [1 1 1; 1 0 0 ; 0 1 0; 0 0 1]; % to represent the label
+cmap = [1 1 1; 1 0 0; 0 0 1; 0 1 0]; % to represent the label
 
 fprintf('loading data and computing feature maps...\n');
 % load true label x and input image from europa2_sidewalktetector
@@ -37,11 +37,7 @@ end
 
 
 %% 
-% The features consist of simply the input image y itslef, the first two 
-% principal component for each cell in the center of  8-neighbours adjacent
-% cells, and a constant of one.
 % The labels representation consists on values from  1 to nvals, with 0 for unlabeled
-
 for n=1:N
     fprintf('new image\n');
     % reduce resolution for speed, in case we use the different GRIDMAPS images
@@ -52,20 +48,29 @@ for n=1:N
     for i=1:ly
         for j=1:lx
             l_r = labels0{n}(i,j,1);
+            l_g = labels0{n}(i,j,2);
             l_b = labels0{n}(i,j,3);
-            if(l_r>0.8 & l_b<0.8)
-                l(i,j) = 2; % red means curb side of the sidewalk
-            elseif(l_b>0.8 & l_r<0.8)
-                l(i,j) = 3; % blue means wall side of the sidewalk
-             else
-                l(i,j) = 1; % background
+            if(l_r>0.8 & l_g<0.8 & l_b<0.8)
+                l(i,j) = 1; % red means curb side of the sidewalk
+            elseif(l_b>0.8 & l_r<0.8 & l_g<0.8)
+                l(i,j) = 2; % blue means wall side of the sidewalk
+            elseif(l_g>0.8 & l_r<0.8 & l_b<0.8)
+                l(i,j) = 3; % green means building and background next to the sidewalk
+            else
+                l(i,j) = 0; % background unlabeled
             end
         end
     end
     figure(n);
-    colormap(cmap); miximshow(reshape(l,ly,lx),nvals);
+    colormap(cmap); miximshow(reshape(l+1,ly,lx),nvals+1); % adjust the labeleing to visualize the unlabeled portion in white91 for matlab)
     labels0{n} = l;
     fprintf('label computed\n');
+end
+    %%
+    % The features consist of simply the input image y itslef, the first two 
+    % principal component for each cell in the center of  8-neighbours adjacent
+    % cells, and a constant of one.
+for n=1:N
     labels{n} = imresize(labels0{n},rez,'nearest');
     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
     feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
