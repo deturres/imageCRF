@@ -15,7 +15,6 @@ MCRF_multiEuropa(path_name); % when using multi segmentation with two or more tr
 % clear all
 
 % training CRFs on the Stanford Backgrounds Dataset
-
 % MCRF_backgrounds;
 
 %% 

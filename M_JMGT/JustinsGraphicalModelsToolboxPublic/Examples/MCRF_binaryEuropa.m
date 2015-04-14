@@ -201,7 +201,7 @@ for n=1:length(feats_test)
     T(n) = sum(label0(:)>0);
     fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
 
-    % (case 0(black) = yes curb!)
+    % workaround (case 0(black) = yes curb!)
     % computing the predicted labels considering value bigger than threshold t=0.75 as
     % label 1, otherwise as label 0(yes curb!)
     t = 0.85; siz = [size(b_i_reshape,1), size(b_i_reshape,2)];

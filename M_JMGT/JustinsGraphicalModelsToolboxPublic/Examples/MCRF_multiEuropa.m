@@ -2,7 +2,7 @@ function MCRF_binaryEuropa(path_name)
 
 %% load the data and computing labels and features map
 imdir = [ path_name '/train/'];
-im_names = dir([imdir '*.png']); % '*.png'. Just in case of entire log: *0.5.png, in case version in black use 0.5_origin_...png
+im_names = dir([imdir '*0.5.png']); % '*.png' when using small gridmaps. In case version in black use 0.5_origin_...png
 labdir = [ path_name '/labels/'];
 lab_names = dir([labdir '*multi3_GT.png']);
 
@@ -10,12 +10,13 @@ lab_names = dir([labdir '*multi3_GT.png']);
 N     = length(im_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
 nvals = 3; % curb/sidewalkWall/background 0 is unlabeled
-rez    = .6; % how much to reduce resolution
+rez    = .6; % how much resolution percentage to use
 cmap = [1 1 1; 1 0 0; 0 0 1; 0 1 0]; % to represent the label
 
 fprintf('loading data and computing feature maps...\n');
 % load true label x and input image from europa2_sidewalktetector
 ims = cell(1,N);
+labelsRGB = cell(1,N);
 labels0 = cell(1,N);
 labels = cell(1,N);
 feats = cell(1,N);
@@ -30,8 +31,8 @@ for n=1:N
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
 %     limg = rgb2gray(L);
-    labels0{n}  = L; % true label GT
-    figure('Name','Loading label...','NumberTitle','off'); imshow(labels0{n});
+    labelsRGB{n}  = L; % true label GT
+    figure('Name','Loading label RGB...','NumberTitle','off'); imshow(labelsRGB{n});
     
 end
 
@@ -43,13 +44,13 @@ for n=1:N
     % reduce resolution for speed, in case we use the different GRIDMAPS images
     ims{n}    = imresize(ims{n}   ,rez,'bilinear');
     % compute the label as a ly*lx matrix, whose values are classes depending on the 3-rgb channels original labels0 images
-    [ly lx lz] = size(labels0{n});
+    [ly lx lz] = size(labelsRGB{n});
     l = zeros(ly,lx);
     for i=1:ly
         for j=1:lx
-            l_r = labels0{n}(i,j,1);
-            l_g = labels0{n}(i,j,2);
-            l_b = labels0{n}(i,j,3);
+            l_r = labelsRGB{n}(i,j,1);
+            l_g = labelsRGB{n}(i,j,2);
+            l_b = labelsRGB{n}(i,j,3);
             if(l_r>0.8 & l_g<0.8 & l_b<0.8)
                 l(i,j) = 1; % red means curb side of the sidewalk
             elseif(l_b>0.8 & l_r<0.8 & l_g<0.8)
@@ -62,8 +63,10 @@ for n=1:N
         end
     end
     figure(n);
-    colormap(cmap); miximshow(reshape(l+1,ly,lx),nvals+1); % adjust the labeleing to visualize the unlabeled portion in white91 for matlab)
+%     title('Name','Loading label RGB...','NumberTitle','off');
+    colormap(cmap); miximshow(reshape(l+1,ly,lx),nvals+1); % adjust the labeleing to visualize the unlabeled portion in white for matlab)
     labels0{n} = l;
+    labels{n} = imresize(labels0{n},rez,'nearest');
     fprintf('label computed\n');
 end
     %%
@@ -71,9 +74,9 @@ end
     % principal component for each cell in the center of  8-neighbours adjacent
     % cells, and a constant of one.
 for n=1:N
-    labels{n} = imresize(labels0{n},rez,'nearest');
-    [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
-    feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
+    
+%     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
+    feats{n}  = [ims{n}(:) 1+0*labels{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
     fprintf('features computed\n');    
 %     % finding the first n max values(value<0.2)to be set to 1 (less weight to be of class 0)
 %     [r,c] = find(feats{n}(1,1)<0.35);
@@ -89,7 +92,7 @@ end
 % the images come in slightly different sizes, so we need to make many models
 % use a "hashing" strategy to not rebuild.  Start with empty giant array
 
-model_hash = repmat({[]},1200,1200);
+model_hash = repmat({[]},1000,1150);
 fprintf('building models...\n')
 for n=1:N
     [ly lx lz] = size(ims{n});
@@ -106,7 +109,8 @@ end
 %% edge features (affect the smootheness of the result) plus splitting train and test set
 
 fprintf('computing edge features...\n')
-edge_params = {{'const'},{'diffthresh'},{'pairtypes'}};
+% instead of 'diffthresh', we will have the edge feature coming from the angles wrt the road direction
+edge_params = {{'const'},{'diffthresh'},{'pairtypes'}}; 
 
 % add here the evaliuation of the historical angle between cells
 efeats = [];
@@ -115,24 +119,17 @@ efeats = [];
 %     efeats{n} = edgeify_im(y{n},edge_params,models{n}.pairs,models{n}.pairtype);
 % end
 
-% for n=1:N    
-%     data = y{n};
-%     size(data)
-%     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(data);
-%     efeats{n} = [hor_efeats_ij(:) ver_efeats_ij(:) 1+0*x{n}(:)];
-% end
-
 fprintf('splitting data into a training and a test set...\n')
 % split everything into a training and test set
 
-% with entire logs 1 and 2,if one(log2) train, one(log1) test: 
+% with entire logs 1 and 2: one(log2) train, one(log1) test: 
 k = 2;
 [who_train who_test] = kfold_sets(N,2,k)
 
 % with gridmaps for each log 1 and 2, the second parameter is how many training images you want to take into account 
-
 % k = 2;
-% [who_train who_test] = kfold_sets(N,N,k)
+% K = N;
+% [who_train who_test] = kfold_sets(N,K,k)
 
 
 ims_train     = ims(who_train);
@@ -225,15 +222,6 @@ for n=1:length(feats_test)
     error = mean(label_pred(:)~=label0(:))
     fprintf('error on test data,pred~GT: %f \n', error)
     fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
-
-    % (case 0(black) = yes curb!)
-    % computing the predicted labels considering value bigger than threshold t=0.75 as
-    % label 1, otherwise as label 0(yes curb!)
-    t = 0.85; siz = [size(b_i_reshape,1), size(b_i_reshape,2)];
-    [i,j] = ind2sub(siz,find(b_i_reshape(:,:,2)<t));
-    for h=1:size(i)        
-        b_i_reshape(i(h),j(h),2) = 0.0;
-    end
 
     % choose between max value (taking the corresponding index-->class) and
     % mean value directly corresponding to the probability predicted label
