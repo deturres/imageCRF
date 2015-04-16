@@ -75,8 +75,8 @@ end
     % cells, and a constant of one.
 for n=1:N
     
-%     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
-    feats{n}  = [ims{n}(:) 1+0*labels{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
+    [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
+    feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
     fprintf('features computed\n');    
 %     % finding the first n max values(value<0.2)to be set to 1 (less weight to be of class 0)
 %     [r,c] = find(feats{n}(1,1)<0.35);
@@ -186,7 +186,7 @@ options.nvals       = nvals;
 % figure('Name','Training...','NumberTitle','off');
 
 % we actually optimize
-% This prints a visualization while running, using the viz function above.
+% This prints a visualization while running , using the viz function above.
 p = train_crf(feats_train,efeats_train,labels_train,models_train,loss_spec,crf_type,options);
 
 % if using the entire set to train
@@ -205,50 +205,49 @@ fprintf('get the marginals for test images...\n');
 for n=1:length(feats_test)
     [ly lx] = size(labels_test{n});
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test,models_test{n},loss_spec,crf_type,rho);
-
+    % choose between max value (taking the corresponding index-->class) and
+    % mean value directly corresponding to the probability predicted label
+    % [label_pred] = mean(b_i_reshape,3);
+    [~,label_pred] = max(b_i,[],1);
     b_i_reshape = reshape(b_i',[ly lx nvals]);
-
-    [~,label_pred] = max(b_i_reshape,[],3);
+    label_pred = reshape(label_pred,ly,lx);
     error_downsample = mean(label_pred(:)~=labels_test{n}(:))
-
+size(b_i)
+size(b_i_reshape)
     % Accuracy: pixelwise error
     label0 = labels0_test{n};
     size(label0)
     size(label_pred)
     % upsample predicted images to full resolution
     label_pred  = imresize(label_pred,size(label0),'nearest');
+    size(label_pred)
     E(n) = sum(label_pred(label0(:)>0)~=label0(label0(:)>0));
     T(n) = sum(label0(:)>0);
-    error = mean(label_pred(:)~=label0(:))
-    fprintf('error on test data,pred~GT: %f \n', error)
+    error_upsample = mean(label_pred(:)~=label0(:))
+    fprintf('erro_upsample on test data,pred~GT: %f \n', error_upsample)
     fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
-
-    % choose between max value (taking the corresponding index-->class) and
-    % mean value directly corresponding to the probability predicted label
-    [~,label_pred] = max(b_i_reshape,[],3);
-    % [label_pred] = mean(b_i_reshape,3);
+        
+    
+    figure('Name','Testing..input image','NumberTitle','off');
+    imshow(reshape(feats_test{n}(:,1),ly,lx));
     
     M = length(feats_test);
     % visualizing final predicted marginal and label
     figure('Name','Testing..marginal','NumberTitle','off');
     subplot(M,3,1); imshow(reshape(b_i(1,:),ly,lx));
-    title('predicted marginal belief(class 1-background))');
+    title('predicted marginal belief(class 1-curb side))');
     subplot(M,3,1+   M); imshow(reshape(b_i(2,:),ly,lx));
-    title('predicted marginal belief(class 2-curb))');
+    title('predicted marginal belief(class 2-wall side))');
     subplot(M,3,1+ 2*M); imshow(reshape(b_i(3,:),ly,lx));
-    title('predicted marginal belief(class 3-sidewalkWall))');
-
-    figure('Name','Testing..labels','NumberTitle','off');
-%     subplot(M,3,1); 
-    imshow(reshape(feats_test{n}(:,1),ly,lx));
-    title('input');
+    title('predicted marginal belief(class 3-buildings/background))');
     
     figure('Name','Testing..labels true and predicted','NumberTitle','off');
     colormap(cmap); 
-    subplot(M,2,1   ); miximshow(reshape(labels_test{n}(:),ly,lx),nvals);
+    label_gt = label0(:)+1;
+    [ly lx] = size(labels0_test{n});
+    subplot(M,2,1   ); miximshow(reshape(label_gt,ly,lx),nvals+1);
     title('true label');
-    hold on; axes();
-    subplot(M,2,1+ M); miximshow(reshape(label_pred(:),ly,lx),nvals);
+    subplot(M,2,1+ M); miximshow(reshape(label_pred(:),ly,lx),nvals+1);
     title('predicted label');
     % subplot(M,3,1+ 2*M);  imshow(reshape(label_pred(:),ly,lx)); % -1 to the label just in case they were computed with max()
 end
