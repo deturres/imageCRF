@@ -9,7 +9,7 @@ lab_names = dir([labdir '*multi3_GT.png']);
 % parameters of the problem
 N     = length(im_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
-nvals = 3; % curb/sidewalkWall/background 0 is unlabeled
+nvals = 4; % curb/sidewalkWall/buildings/background (0 in case unlabeled)
 rez    = .6; % how much resolution percentage to use
 cmap = [1 1 1; 1 0 0; 0 0 1; 0 1 0]; % to represent the label
 
@@ -52,19 +52,19 @@ for n=1:N
             l_g = labelsRGB{n}(i,j,2);
             l_b = labelsRGB{n}(i,j,3);
             if(l_r>0.8 & l_g<0.8 & l_b<0.8)
-                l(i,j) = 1; % red means curb side of the sidewalk
+                l(i,j) = 2; % red means curb side of the sidewalk
             elseif(l_b>0.8 & l_r<0.8 & l_g<0.8)
-                l(i,j) = 2; % blue means wall side of the sidewalk
+                l(i,j) = 3; % blue means wall side of the sidewalk
             elseif(l_g>0.8 & l_r<0.8 & l_b<0.8)
-                l(i,j) = 3; % green means building and background next to the sidewalk
+                l(i,j) = 4; % green means building and background next to the sidewalk
             else
-                l(i,j) = 0; % background unlabeled
+                l(i,j) = 1; % white means background
             end
         end
     end
     figure(n);
 %     title('Name','Loading label RGB...','NumberTitle','off');
-    colormap(cmap); miximshow(reshape(l+1,ly,lx),nvals+1); % adjust the labeleing to visualize the unlabeled portion in white for matlab)
+    colormap(cmap); miximshow(reshape(l,ly,lx),nvals);
     labels0{n} = l;
     labels{n} = imresize(labels0{n},rez,'nearest');
     fprintf('label computed\n');
@@ -212,21 +212,16 @@ for n=1:length(feats_test)
     b_i_reshape = reshape(b_i',[ly lx nvals]);
     label_pred = reshape(label_pred,ly,lx);
     error_downsample = mean(label_pred(:)~=labels_test{n}(:))
-size(b_i)
-size(b_i_reshape)
+
     % Accuracy: pixelwise error
     label0 = labels0_test{n};
-    size(label0)
-    size(label_pred)
     % upsample predicted images to full resolution
     label_pred  = imresize(label_pred,size(label0),'nearest');
-    size(label_pred)
     E(n) = sum(label_pred(label0(:)>0)~=label0(label0(:)>0));
     T(n) = sum(label0(:)>0);
     error_upsample = mean(label_pred(:)~=label0(:))
     fprintf('erro_upsample on test data,pred~GT: %f \n', error_upsample)
     fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
-        
     
     figure('Name','Testing..input image','NumberTitle','off');
     imshow(reshape(feats_test{n}(:,1),ly,lx));
@@ -234,20 +229,22 @@ size(b_i_reshape)
     M = length(feats_test);
     % visualizing final predicted marginal and label
     figure('Name','Testing..marginal','NumberTitle','off');
-    subplot(M,3,1); imshow(reshape(b_i(1,:),ly,lx));
-    title('predicted marginal belief(class 1-curb side))');
-    subplot(M,3,1+   M); imshow(reshape(b_i(2,:),ly,lx));
-    title('predicted marginal belief(class 2-wall side))');
-    subplot(M,3,1+ 2*M); imshow(reshape(b_i(3,:),ly,lx));
-    title('predicted marginal belief(class 3-buildings/background))');
+    subplot(2,2,1); imshow(reshape(b_i(1,:),ly,lx));
+    title('predicted marginal belief(class 1-background))');
+    subplot(2,2,2); imshow(reshape(b_i(2,:),ly,lx));
+    title('predicted marginal belief(class 2-curb side))');
+    subplot(2,2,3); imshow(reshape(b_i(3,:),ly,lx));
+    title('predicted marginal belief(class 3-wall side))');
+    subplot(2,2,4); imshow(reshape(b_i(4,:),ly,lx));
+    title('predicted marginal belief(class 4-buildings))');
     
     figure('Name','Testing..labels true and predicted','NumberTitle','off');
     colormap(cmap); 
-    label_gt = label0(:)+1;
+    label_gt = label0(:);
     [ly lx] = size(labels0_test{n});
-    subplot(M,2,1   ); miximshow(reshape(label_gt,ly,lx),nvals+1);
+    subplot(M,2,1   ); miximshow(reshape(label_gt,ly,lx),nvals);
     title('true label');
-    subplot(M,2,1+ M); miximshow(reshape(label_pred(:),ly,lx),nvals+1);
+    subplot(M,2,1+ M); miximshow(reshape(label_pred(:),ly,lx),nvals);
     title('predicted label');
     % subplot(M,3,1+ 2*M);  imshow(reshape(label_pred(:),ly,lx)); % -1 to the label just in case they were computed with max()
 end
