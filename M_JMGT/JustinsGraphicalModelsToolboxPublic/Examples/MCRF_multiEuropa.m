@@ -220,7 +220,7 @@ for n=1:length(feats_test)
     E(n) = sum(label_pred(label0(:)>0)~=label0(label0(:)>0));
     T(n) = sum(label0(:)>0);
     error_upsample = mean(label_pred(:)~=label0(:))
-    fprintf('erro_upsample on test data,pred~GT: %f \n', error_upsample)
+    fprintf('error_upsample on test data,pred~GT: %f \n', error_upsample)
     fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
     
     figure('Name','Testing..input image','NumberTitle','off');
