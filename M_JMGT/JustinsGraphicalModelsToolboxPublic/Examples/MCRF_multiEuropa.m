@@ -2,7 +2,7 @@ function MCRF_multiEuropa(path_name)
 
 %% load the data and computing labels and features map
 imdir = [ path_name '/train/'];
-im_names = dir([imdir '*0.5.png']); % '*.png' when using small gridmaps. In case version in black use 0.5_origin_...png
+im_names = dir([imdir '*0.5.png']); % For small gridmaps/old_features dataset'*.png'
 labdir = [ path_name '/labels/'];
 lab_names = dir([labdir '*multi3_GT.png']);
 
@@ -41,7 +41,8 @@ end
 % The labels representation consists on values from  1 to nvals, with 0 for unlabeled
 for n=1:N
     fprintf('new image\n');
-    % reduce resolution for speed, in case we use the different GRIDMAPS images
+    % reduce resolution for speed (mostly in case we use the different
+    % GRIDMAPS images)
     ims{n}    = imresize(ims{n}   ,rez,'bilinear');
     % compute the label as a ly*lx matrix, whose values are classes depending on the 3-rgb channels original labels0 images
     [ly lx lz] = size(labelsRGB{n});

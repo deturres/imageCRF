@@ -2,9 +2,9 @@ function MCRF_binaryEuropa(path_name)
 
 %% load the data and computing labels and features map
 imdir = [ path_name '/train/'];
-im_names = dir([imdir '*0.5.png']); % '*.png'. Just in case of entire_log dataset: *0.5.png, in case version in black use 0.5_origin_...png
+im_names = dir([imdir '*0.5.png']); % For small gridmaps/old_features dataset'*.png'. For entire_log_old dataset: '*0.5.png'(in case version in black use 0.5_origin_...png)
 labdir = [ path_name '/labels/'];
-lab_names = dir([labdir '*_GT_notAuto.png']); % in case version in black (origin_nonoise_...png) 
+lab_names = dir([labdir '*_GT_notAuto.png']); % % For small gridmaps/old_features dataset'*.png'
 
 % parameters of the problem
 N     = length(im_names);  % size of training images

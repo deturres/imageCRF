@@ -7,9 +7,9 @@ clear all
 % path_name = './Dataset/europaData/gridmaps/old_features/';
 path_name = './Dataset/europaData/entire_log_new/res50/';
 % MCRF_binarydenoising(path_name); % when using binary segmentation with fake image(for training, testing on the very same one, just to plot the results at the end)
-% MCRF_binaryEuropa_oneentirelog(path_name); % when using binary segmentation with just one Europa image (for training, testing on the very same one, just to plot the results at the end)
-% MCRF_binaryEuropa(path_name);  % when using binary segmentation with two or more training examples (entire log or gridmaps)
-MCRF_multiEuropa(path_name); % when using multi segmentation with two or more training examples(entire log new)
+% MCRF_binaryEuropa_entirelog_old(path_name); % when using binary segmentation with just one Europa image (for training, testing on the very same one, just to plot the results at the end)
+% MCRF_binaryEuropa(path_name);  % when using binary segmentation with two or more training examples and different testing dataset (entire log old or gridmaps)
+MCRF_multiEuropa(path_name); % when using multi segmentation with two or more training examples and different testing dataset(entire log new)
 
 %% 
 % clc
