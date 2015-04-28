@@ -1,4 +1,4 @@
-function MCRF_binaryEuropa(path_name)
+function MCRF_multiEuropa(path_name)
 
 %% load the data and computing labels and features map
 imdir = [ path_name '/train/'];

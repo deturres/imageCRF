@@ -1,4 +1,4 @@
-function MCRF_binarydenoising(path_name)
+function MCRF_binaryEuropa_oneentire_log(path_name)
 
 %% load the data
 traindir = [ path_name '/train/'];

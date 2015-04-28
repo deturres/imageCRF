@@ -1,68 +1,48 @@
 function MCRF_binarydenoising(path_name)
 
-%% load the data
+%% load the fake data
 traindir = [ path_name '/train/'];
-train_names = dir([traindir '*0.5_nonoise.png']); %  in case version in black use 0.5_origin_...
-labdir = [ path_name '/labels/'];
-lab_names = dir([labdir '*0.5_GT.png']); % in case version in black (origin_nonoise_...) 
+train_names = dir([traindir '*.jpg']);
 
 % parameters of the problem
-N     = 1; %length(train_names);  % size of training/test images
+N     = length(train_names);  % size of training/test images
 rho   = .5; % (1 = loopy belief propagation) (.5 = tree-reweighted belief propagation)
 nvals = 2; % this problem is binary
 
+fprintf('loading fake data and computing input, labels and feature maps...\n');
 
 % in case of random generated data
 % N     = 4;  % size of training images random generated
 % siz   = 50; % size of training images random generated
 % % load a fake dataset or randomly generate it, Basically, making noisy images, then smoothing them to make the true (discrete) output values, and then adding noise to make the input.
-% x = cell(1,N);
-% for n=1:N
-% 
-%     % random generate data
-%     % x{n} = round(imfilter(rand(siz),fspecial('gaussian',50,7),'same','symmetric')); % true label x
-%     
-%     % load your own data as true label x, add noise to create the input y
-%     I = double(imread(([traindir train_names(n).name])));
-%     img = rgb2gray(I);
-%     x{n}  = round(img); % true label x
-%     imshow(x{n})
-%     
-%     % extremely difficult noise pattern -- from perturbation paper
-%     t = rand(size(x{n})); 
-%     noiselevel = 1.25; % in perturbation paper 1.25
-%     y{n} = x{n}.*(1-t.^noiselevel) + (1-x{n}).*t.^noiselevel; % noisy input y
-%     
-% end
-
-fprintf('loading data and computing feature maps...\n');
-% load true label x and input image from europa2_sidewalktetector
 x = cell(1,N);
 feats = cell(1,N);
 efeats = cell(1,N);
 for n=1:N
+    % x{n} = round(imfilter(rand(siz),fspecial('gaussian',50,7),'same','symmetric')); % true label x
     
-    % load input images
-    I = double(imread(([traindir train_names(n).name])))/255;    
+    % load your own data as true label x, add noise to create the input y
+    I = double(imread(([traindir train_names(n).name])));
     img = rgb2gray(I);
-    y{n}  = img; % input images y
-    figure('Name','Loading input...','NumberTitle','off'); imshow(y{n});
-    % load labels
-    L = double(imread(([labdir lab_names(n).name])))/255;
-    limg = rgb2gray(L);
-    x{n}  = round(limg); % true label GT x
-    figure('Name','Loading label...','NumberTitle','off'); imshow(x{n});
+    x{n}  = round(img); % true label x
+    figure('Name','Loading input...','NumberTitle','off'); imshow(x{n});
     
+    % extremely difficult noise pattern -- from perturbation paper
+    t = rand(size(x{n})); 
+    noiselevel = 1.25; % in perturbation paper 1.25
+    y{n} = x{n}.*(1-t.^noiselevel) + (1-x{n}).*t.^noiselevel; % noisy input y
+    figure('Name','Loading label...','NumberTitle','off'); imshow(y{n});
 end
+
+
+
 
 %% make features and labels.
 
 % The features consist of simply the input image y itslef and a constant of one.
 % The labels representation consists on value from of 1-nvals with 0 for unlabeled
 for n=1:N
-    data = y{n};
-    [hor_feats_ij ver_feats_ij] = evaluate_pca(data);
-    feats{n}  = [y{n}(:) hor_feats_ij(:) ver_feats_ij(:) 1+0*x{n}(:)];
+    feats{n}  = [y{n}(:) 1+0*x{n}(:)];
     labels{n} = x{n}+1;
     
 %     % finding the first n max values(value<0.2)to be set to 1 (less weight to be of class 0)
@@ -160,7 +140,8 @@ p = train_crf(feats,efeats,labels,model,loss_spec,crf_type,options);
 % feats  = [y(:) 1+0*x(:)];
 % labels = x+1;
 
-% if using the very same image as testing image
+% if using the very same image as testing image (todo: we can also load from the
+% test folder)
 yt=y{1};
 xt=x{1};
 
