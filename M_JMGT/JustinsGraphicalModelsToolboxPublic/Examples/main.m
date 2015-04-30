@@ -2,14 +2,27 @@ clc
 clear all
 
 % a simply CRF for binarydenoising, with gridmodel and noisy input
+
+% OLD FEATURES
 % path_name = './Dataset/fakeData/';
 % path_name = './Dataset/europaData/entire_log_old/res50/';
 % path_name = './Dataset/europaData/gridmaps/old_features/';
+
+% NEW FEATURES
 path_name = './Dataset/europaData/entire_log_new/res50/';
-% MCRF_binarydenoising(path_name); % when using binary segmentation with fake image(for training, testing on the very same one, just to plot the results at the end)
-% MCRF_binaryEuropa_entirelog_old(path_name); % when using binary segmentation with just one Europa image (for training, testing on the very same one, just to plot the results at the end)
-% MCRF_binaryEuropa(path_name);  % when using binary segmentation with two or more training examples and different testing dataset (entire log old or gridmaps)
-MCRF_multiEuropa(path_name); % when using multi segmentation with two or more training examples and different testing dataset(entire log new)
+% path_name = './Dataset/europaData/gridmaps/new_features/'; TO BE DONE
+
+% when using binary segmentation with fake image(for training, testing on the very same one, just to plot the results at the end)
+% MCRF_binarydenoising(path_name);
+
+% when using binary segmentation with just one Europa image (for training, testing on the very same one, just to plot the results at the end)
+% MCRF_binaryEuropa_entirelog_old(path_name); 
+
+% when using binary segmentation with two or more training examples and different testing dataset (entire log old or gridmaps[tried wioth new feats, really bad!)
+% MCRF_binaryEuropa(path_name);  
+
+% when using multi segmentation with two or more training examples and different testing dataset(entire log new)
+MCRF_multiEuropa(path_name); 
 
 %% 
 % clc

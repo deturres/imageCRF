@@ -2,9 +2,9 @@ function MCRF_multiEuropa(path_name)
 
 %% load the data and computing labels and features map
 imdir = [ path_name '/train/'];
-im_names = dir([imdir '*0.5.png']); % For small gridmaps/old_features dataset'*.png'
+im_names = dir([imdir '*0.5_area_P*']); % For small gridmaps/old_features dataset'*.png'. For small portion of the same log '*0.5_area 0.5_area_P*'
 labdir = [ path_name '/labels/'];
-lab_names = dir([labdir '*multi3_GT.png']);
+lab_names = dir([labdir '*multi3_GT_area_P*']);
 
 % parameters of the problem
 N     = length(im_names);  % size of training images
@@ -43,7 +43,9 @@ for n=1:N
     fprintf('new image\n');
     % reduce resolution for speed (mostly in case we use the different
     % GRIDMAPS images)
-    ims{n}    = imresize(ims{n}   ,rez,'bilinear');
+    % DO NOT REDUCE when using small portion of the entire log
+%     ims{n}    = imresize(ims{n}   ,rez,'bilinear');
+
     % compute the label as a ly*lx matrix, whose values are classes depending on the 3-rgb channels original labels0 images
     [ly lx lz] = size(labelsRGB{n});
     l = zeros(ly,lx);
@@ -67,7 +69,9 @@ for n=1:N
 %     title('Name','Loading label RGB...','NumberTitle','off');
     colormap(cmap); miximshow(reshape(l,ly,lx),nvals);
     labels0{n} = l;
-    labels{n} = imresize(labels0{n},rez,'nearest');
+    % DO NOT REDUCE when using small portion of the entire log
+%     labels{n} = imresize(labels0{n},rez,'nearest');
+    labels{n} = labels0{n};
     fprintf('label computed\n');
 end
     %%
@@ -93,7 +97,11 @@ end
 % the images come in slightly different sizes, so we need to make many models
 % use a "hashing" strategy to not rebuild.  Start with empty giant array
 
-model_hash = repmat({[]},1000,1150);
+% very big model_hash in case of entire_log_new
+%   model_hash = repmat({[]},1000,1150);
+%very small model_hash in case of small portion of entire_log_new
+model_hash = repmat({[]},200,200);
+
 fprintf('building models...\n')
 for n=1:N
     [ly lx lz] = size(ims{n});
