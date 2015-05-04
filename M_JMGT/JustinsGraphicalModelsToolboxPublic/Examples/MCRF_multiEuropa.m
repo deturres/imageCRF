@@ -1,10 +1,10 @@
 function MCRF_multiEuropa(path_name)
 
 %% load the data and computing labels and features map
-imdir = [ path_name '/train/'];
-im_names = dir([imdir '*0.5_area_P*']); % For small gridmaps/old_features dataset'*.png'. For small portion of the same log '*0.5_area 0.5_area_P*'
-labdir = [ path_name '/labels/'];
-lab_names = dir([labdir '*multi3_GT_area_P*']);
+imdir = [ path_name '/train/portion']; % Valid for small gridmaps/old_features dataset(inside trains) or portion(inside trains/portion)
+im_names = dir([imdir '*0.5.png*']); 
+labdir = [ path_name '/labels/portion']; % same name for entire_log_new or portion
+lab_names = dir([labdir '*multi4AREA_GT.png*']);
 
 % parameters of the problem
 N     = length(im_names);  % size of training images
@@ -41,10 +41,9 @@ end
 % The labels representation consists on values from  1 to nvals, with 0 for unlabeled
 for n=1:N
     fprintf('new image\n');
-    % reduce resolution for speed (mostly in case we use the different
-    % GRIDMAPS images)
+    % reduce resolution for speed (mostly in case we use the different GRIDMAPS images)
     % DO NOT REDUCE when using small portion of the entire log
-%     ims{n}    = imresize(ims{n}   ,rez,'bilinear');
+%     ims{n}    = imresize(ims{n},rez,'bilinear');
 
     % compute the label as a ly*lx matrix, whose values are classes depending on the 3-rgb channels original labels0 images
     [ly lx lz] = size(labelsRGB{n});

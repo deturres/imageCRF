@@ -12,16 +12,17 @@ clear all
 path_name = './Dataset/europaData/entire_log_new/res50/';
 % path_name = './Dataset/europaData/gridmaps/new_features/'; TO BE DONE
 
-% when using binary segmentation with fake image(for training, testing on the very same one, just to plot the results at the end)
+% when using BINARY segmentation with fake images(for training, testing on the very same one, just to plot the results at the end)
 % MCRF_binarydenoising(path_name);
 
-% when using binary segmentation with just one Europa image (for training, testing on the very same one, just to plot the results at the end)
+% when using BINARY segmentation with just one Europa images(for training, testing on the very same one, just to plot the results at the end)
 % MCRF_binaryEuropa_entirelog_old(path_name); 
 
-% when using binary segmentation with two or more training examples and different testing dataset (entire log old or gridmaps[tried wioth new feats, really bad!)
+% when using BINARY segmentation with two or more training examples and different testing dataset(entire log old or gridmaps)
+% [tried with new feats, really bad!)
 % MCRF_binaryEuropa(path_name);  
 
-% when using multi segmentation with two or more training examples and different testing dataset(entire log new)
+% when using MULTI segmentation with two or more training examples and different testing dataset(just curb or area entire log new - entire log image or small portion)
 MCRF_multiEuropa(path_name); 
 
 %% 
