@@ -9,7 +9,7 @@ clear all
 % path_name = './Dataset/europaData/gridmaps/old_features/';
 
 % NEW FEATURES
-path_name = './Dataset/europaData/entire_log_new/res50/';
+path_name = './Dataset/europaData/entire_log_new/res10/';
 % path_name = './Dataset/europaData/gridmaps/new_features/'; TO BE DONE
 
 % when using BINARY segmentation with fake images(for training, testing on the very same one, just to plot the results at the end)
@@ -22,7 +22,7 @@ path_name = './Dataset/europaData/entire_log_new/res50/';
 % [tried with new feats, really bad!)
 % MCRF_binaryEuropa(path_name);  
 
-% when using MULTI segmentation with two or more training examples and different testing dataset(just curb or area entire log new - entire log image or small portion)
+% when using MULTI segmentation with two or more training examples and different testing dataset(entire log new[entire image or small portion/just curb or area])
 MCRF_multiEuropa(path_name); 
 
 %% 

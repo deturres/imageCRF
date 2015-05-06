@@ -1,10 +1,10 @@
 function MCRF_multiEuropa(path_name)
 
 %% load the data and computing labels and features map
-imdir = [ path_name '/train/portion']; % Valid for small gridmaps/old_features dataset(inside trains) or portion(inside trains/portion)
-im_names = dir([imdir '*0.5.png*']); 
-labdir = [ path_name '/labels/portion']; % same name for entire_log_new or portion
-lab_names = dir([labdir '*multi4AREA_GT.png*']);
+imdir = [ path_name '/train/portion/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
+im_names = dir([imdir '*.png']); 
+labdir = [ path_name '/labels/portion/']; % same name for entire_log_new or portion
+lab_names = dir([labdir '*multi4AREA_GT.png']);
 
 % parameters of the problem
 N     = length(im_names);  % size of training images
@@ -54,19 +54,18 @@ for n=1:N
             l_g = labelsRGB{n}(i,j,2);
             l_b = labelsRGB{n}(i,j,3);
             if(l_r>0.8 & l_g<0.8 & l_b<0.8)
-                l(i,j) = 2; % red means curb side of the sidewalk
+                l(i,j) = 2; % red means street (if not labeling area: curb side of the sidewalk)
             elseif(l_b>0.8 & l_r<0.8 & l_g<0.8)
-                l(i,j) = 3; % blue means wall side of the sidewalk
+                l(i,j) = 3; % blue means sidewalk (if not labeling area: wall side of the sidewalk)
             elseif(l_g>0.8 & l_r<0.8 & l_b<0.8)
                 l(i,j) = 4; % green means building and background next to the sidewalk
             else
-                l(i,j) = 1; % white means background
+                l(i,j) = 1; % white means background(no points from the cloud)
             end
         end
     end
-    figure(n);
-%     title('Name','Loading label RGB...','NumberTitle','off');
-    colormap(cmap); miximshow(reshape(l,ly,lx),nvals);
+%     figure('Name','Loading label...','NumberTitle','off');
+%     colormap(cmap); miximshow(reshape(l,ly,lx),nvals);
     labels0{n} = l;
     % DO NOT REDUCE when using small portion of the entire log
 %     labels{n} = imresize(labels0{n},rez,'nearest');
@@ -98,8 +97,9 @@ end
 
 % very big model_hash in case of entire_log_new
 %   model_hash = repmat({[]},1000,1150);
+
 %very small model_hash in case of small portion of entire_log_new
-model_hash = repmat({[]},200,200);
+model_hash = repmat({[]},1000,1200);
 
 fprintf('building models...\n')
 for n=1:N
@@ -236,15 +236,15 @@ for n=1:length(feats_test)
     
     M = length(feats_test);
     % visualizing final predicted marginal and label
-    figure('Name','Testing..marginal','NumberTitle','off');
+    figure('Name','Testing..predicted marginalbelief','NumberTitle','off');
     subplot(2,2,1); imshow(reshape(b_i(1,:),ly,lx));
-    title('predicted marginal belief(class 1-background))');
+    title('(class 1-background)');
     subplot(2,2,2); imshow(reshape(b_i(2,:),ly,lx));
-    title('predicted marginal belief(class 2-curb side))');
+    title('(class 2-street)'); % curb side
     subplot(2,2,3); imshow(reshape(b_i(3,:),ly,lx));
-    title('predicted marginal belief(class 3-wall side))');
+    title('(class 3-sidewalk)'); % wall side
     subplot(2,2,4); imshow(reshape(b_i(4,:),ly,lx));
-    title('predicted marginal belief(class 4-buildings))');
+    title('(class 4-buildings)');
     
     figure('Name','Testing..labels true and predicted','NumberTitle','off');
     colormap(cmap); 
