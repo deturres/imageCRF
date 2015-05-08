@@ -1,13 +1,13 @@
 function MCRF_multiEuropa(path_name)
 
 %% load the data and computing labels and features map
-imdir = [ path_name '/train/portion/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
+imdir = [ path_name '/train/portion/new/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
 im_names = dir([imdir '*.png']); 
-labdir = [ path_name '/labels/portion/']; % same name for entire_log_new or portion
+labdir = [ path_name '/labels/portion/new/']; % same name for entire_log_new or portion
 lab_names = dir([labdir '*multi4AREA_GT.png']);
 
 % parameters of the problem
-N     = length(im_names);  % size of training images
+N     = 4; %length(im_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
 nvals = 4; % curb/sidewalkWall/buildings/background (0 in case unlabeled)
 rez    = .6; % how much resolution percentage to use
@@ -21,13 +21,17 @@ labels0 = cell(1,N);
 labels = cell(1,N);
 feats = cell(1,N);
 efeats = cell(1,N);
-for n=1:N
+for n=4:N
     
     % load input images
     I = double(imread(([imdir im_names(n).name])))/255;    
     img = rgb2gray(I);
     ims{n}  = img; % input images x
     figure('Name','Loading input...','NumberTitle','off'); imshow(ims{n});
+    
+    % compute the distance transform image
+%     [D_euclidean,D_quasiEuclidean] = distance_map(I);
+  
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
 %     limg = rgb2gray(L);
@@ -36,14 +40,17 @@ for n=1:N
     
 end
 
+%%
+% compute the distance transform image
+    [D_euclidean,D_quasiEuclidean] = distance_map(ims{4});
 
 %% 
 % The labels representation consists on values from  1 to nvals, with 0 for unlabeled
 for n=1:N
     fprintf('new image\n');
     % reduce resolution for speed (mostly in case we use the different GRIDMAPS images)
-    % DO NOT REDUCE when using small portion of the entire log
-%     ims{n}    = imresize(ims{n},rez,'bilinear');
+    % DO NOT REDUCE when using small portion of the entire log if it's 0.5
+    ims{n}    = imresize(ims{n},rez,'bilinear');
 
     % compute the label as a ly*lx matrix, whose values are classes depending on the 3-rgb channels original labels0 images
     [ly lx lz] = size(labelsRGB{n});
@@ -64,12 +71,12 @@ for n=1:N
             end
         end
     end
-%     figure('Name','Loading label...','NumberTitle','off');
+%     figure('Name','Loading label...');
 %     colormap(cmap); miximshow(reshape(l,ly,lx),nvals);
     labels0{n} = l;
-    % DO NOT REDUCE when using small portion of the entire log
-%     labels{n} = imresize(labels0{n},rez,'nearest');
-    labels{n} = labels0{n};
+    % DO NOT REDUCE when using small portion of the entire log if it's 0.5
+    labels{n} = imresize(labels0{n},rez,'nearest');
+%     labels{n} = labels0{n};
     fprintf('label computed\n');
 end
     %%
@@ -99,7 +106,7 @@ end
 %   model_hash = repmat({[]},1000,1150);
 
 %very small model_hash in case of small portion of entire_log_new
-model_hash = repmat({[]},1000,1200);
+model_hash = repmat({[]},500,500);
 
 fprintf('building models...\n')
 for n=1:N
@@ -131,13 +138,13 @@ fprintf('splitting data into a training and a test set...\n')
 % split everything into a training and test set
 
 % with entire logs 1 and 2: one(log2) train, one(log1) test: 
-k = 2;
-[who_train who_test] = kfold_sets(N,2,k)
-
-% with gridmaps for each log 1 and 2, the second parameter is how many training images you want to take into account 
 % k = 2;
-% K = N;
-% [who_train who_test] = kfold_sets(N,K,k)
+% [who_train who_test] = kfold_sets(N,2,k)
+
+% with gridmaps for each log 1 and/or 2, the second parameter is how many training images you want to take into account 
+k = 1;
+K = 4;
+[who_train who_test] = kfold_sets(N,K,k)
 
 
 ims_train     = ims(who_train);
