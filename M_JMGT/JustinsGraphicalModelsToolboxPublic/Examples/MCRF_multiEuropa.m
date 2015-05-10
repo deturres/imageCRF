@@ -1,16 +1,16 @@
 function MCRF_multiEuropa(path_name)
 
 %% load the data and computing labels and features map
-imdir = [ path_name '/train/portion/new/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
+imdir = [ path_name '/train/portion/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
 im_names = dir([imdir '*.png']); 
-labdir = [ path_name '/labels/portion/new/']; % same name for entire_log_new or portion
+labdir = [ path_name '/labels/portion/']; % same name for entire_log_new or portion
 lab_names = dir([labdir '*multi4AREA_GT.png']);
 
 % parameters of the problem
-N     = 4; %length(im_names);  % size of training images
+N     = length(im_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
 nvals = 4; % curb/sidewalkWall/buildings/background (0 in case unlabeled)
-rez    = .6; % how much resolution percentage to use
+rez    = .5; % how much resolution percentage to use
 cmap = [1 1 1; 1 0 0; 0 0 1; 0 1 0]; % to represent the label
 
 fprintf('loading data and computing feature maps...\n');
@@ -21,16 +21,13 @@ labels0 = cell(1,N);
 labels = cell(1,N);
 feats = cell(1,N);
 efeats = cell(1,N);
-for n=4:N
+for n=1:N
     
     % load input images
     I = double(imread(([imdir im_names(n).name])))/255;    
     img = rgb2gray(I);
     ims{n}  = img; % input images x
     figure('Name','Loading input...','NumberTitle','off'); imshow(ims{n});
-    
-    % compute the distance transform image
-%     [D_euclidean,D_quasiEuclidean] = distance_map(I);
   
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
@@ -40,9 +37,6 @@ for n=4:N
     
 end
 
-%%
-% compute the distance transform image
-    [D_euclidean,D_quasiEuclidean] = distance_map(ims{4});
 
 %% 
 % The labels representation consists on values from  1 to nvals, with 0 for unlabeled
@@ -85,8 +79,12 @@ end
     % cells, and a constant of one.
 for n=1:N
     
+    % compute the distance transform image
+    [D_euclidean,D_quasiEuclidean] = distance_map(ims{n});
     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
-    feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
+    % normalizing the distance map value
+    D_euclidean = D_euclidean(:)/norm(D_euclidean(:));
+    feats{n}  = [ims{n}(:) D_euclidean(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)];
     fprintf('features computed\n');    
 %     % finding the first n max values(value<0.2)to be set to 1 (less weight to be of class 0)
 %     [r,c] = find(feats{n}(1,1)<0.35);
@@ -98,6 +96,20 @@ for n=1:N
 end
     fprintf('end dataset\n');
 
+%% plot features
+for n=1:N
+    [ly lx] = size(labels{n});
+    dist_map = reshape(feats{n}(:,2),ly,lx);
+    pca_hor = reshape(feats{n}(:,3),ly,lx);
+    pca_ver = reshape(feats{n}(:,4),ly,lx);
+    figure(n), subplot(1,2,1), subimage(mat2gray(dist_map)), title('Distance map')
+    subplot(1,3,2), subimage(mat2gray(pca_hor)), title('First pca component')
+    subplot(1,3,3), subimage(mat2gray(pca_ver)), title('Second pca component')
+%     feats{n}(:,2) = feats{n}(:,2)/norm(feats{n}(:,2));
+%     dist_map_norm = reshape(feats{n}(:,2),ly,lx);
+%     subplot(2,2,2), subimage(mat2gray(dist_map_norm)), title('Distance map normalized')
+end
+
 %% creating the modelyes
 % the images come in slightly different sizes, so we need to make many models
 % use a "hashing" strategy to not rebuild.  Start with empty giant array
@@ -106,7 +118,7 @@ end
 %   model_hash = repmat({[]},1000,1150);
 
 %very small model_hash in case of small portion of entire_log_new
-model_hash = repmat({[]},500,500);
+model_hash = repmat({[]},700,500);
 
 fprintf('building models...\n')
 for n=1:N
@@ -142,8 +154,8 @@ fprintf('splitting data into a training and a test set...\n')
 % [who_train who_test] = kfold_sets(N,2,k)
 
 % with gridmaps for each log 1 and/or 2, the second parameter is how many training images you want to take into account 
-k = 1;
-K = 4;
+k = 2;
+K = N;
 [who_train who_test] = kfold_sets(N,K,k)
 
 

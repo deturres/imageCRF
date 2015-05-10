@@ -67,6 +67,10 @@ for i=2:r-1
     fprintf('end row\n');
 
 end
+% figure, subplot(1,2,1), subimage(mat2gray(hor_efeats_ij)), title('First component')
+% subplot(1,2,2), subimage(mat2gray(ver_efeats_ij)), title('Second component')
+
+
 
 
 end
