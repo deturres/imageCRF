@@ -32,8 +32,6 @@ for i=2:r-1
         [I_adj J_adj] = ind2sub(size(data),Iadj);
         index_matrix = [I_adj' J_adj'];
         index_matrix = [index_matrix(1:4,:); i j ; index_matrix(5:end,:)];
-        
-        fprintf(',\n');
 
         d_adj = ones(1,9);
         for rr=1:size(index_matrix,1)
@@ -67,10 +65,5 @@ for i=2:r-1
     fprintf('end row\n');
 
 end
-% figure, subplot(1,2,1), subimage(mat2gray(hor_efeats_ij)), title('First component')
-% subplot(1,2,2), subimage(mat2gray(ver_efeats_ij)), title('Second component')
-
-
-
 
 end

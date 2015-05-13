@@ -49,11 +49,10 @@ for n=1:N
     ims{n}    = imresize(ims{n}   ,rez,'bilinear');
     labels{n} = labels0{n}+1; % 0 means not labeled
     labels{n} = imresize(labels{n},rez,'nearest');
-%     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
-%     feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
+    [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
+    feats{n}  = [ims{n}(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %hor_efeats_ij(:) ver_efeats_ij(:)
     
     fprintf('end previous image\n');
-
     
 %     % finding the first n max values(value<0.2)to be set to 1 (less weight to be of class 0)
 %     [r,c] = find(feats{n}(1,1)<0.35);
