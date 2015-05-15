@@ -43,7 +43,14 @@ for n=1:N
     figure('Name','Loading label RGB...','NumberTitle','off'); imshow(labelsRGB{n});
     
 end
+% load weights
 
+imweightdir = [ path_name '/train/portion/new/']; % Loading the weights images correspondent to the original features
+imweight_names = dir([imweightdir '*0.1_orig_weight.png']);
+for n=1:1
+    W = double(imread(([imweightdir imweight_names(n).name])))/255;
+    figure('Name','Loading original weights...','NumberTitle','off'); imshow(W);
+end
 
 %% 
 % The labels representation consists on values from  1 to nvals, with 0 for unlabeled
