@@ -8,7 +8,7 @@ function [D_euclidean,D_euclidean_compl] = distance_map(I)
 %   D_euclidean_compl  - the complemtary distance map (unary feature)
 
 % define the level according to which compute the binaty tranformation
-level = 0.92; % graythresh(I)
+level = 0.9; % graythresh(I)
 % compute the binary image transformation
 bwimage = im2bw(I, level);
 figure('Name','Original image and corresponding binary image','NumberTitle','off'), subplot(1,2,1), imshow(I),
@@ -23,10 +23,10 @@ D_euclidean_compl = double(bwdist(~bwimage,method));
 % D_skel = bwmorph(bwimage,'skel', 1);
 % D_skel_compl = bwmorph(~bwimage,'skel', 1);
 
-% figure, subplot(1,2,1), subimage(mat2gray(D_euclidean)), title('Euclidean distance trasform')
-% % hold on, imcontour(D_euclidean)
-% subplot(1,2,2), subimage(mat2gray(D_euclidean_compl)), title('Euclidean distance trasform complementary')
-% % hold on, imcontour(D_euclidean_compl)
+figure, subplot(1,2,1), subimage(mat2gray(D_euclidean)), title('Euclidean distance trasform')
+% hold on, imcontour(D_euclidean)
+subplot(1,2,2), subimage(mat2gray(D_euclidean_compl)), title('Euclidean distance trasform complementary')
+% hold on, imcontour(D_euclidean_compl)
 
 
 % subplot(2,2,3), subimage(mat2gray(D_skel)), title('Skeleton')

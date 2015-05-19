@@ -44,7 +44,6 @@ for n=1:N
     
 end
 % load weights
-
 imweightdir = [ path_name '/train/portion/new/']; % Loading the weights images correspondent to the original features
 imweight_names = dir([imweightdir '*0.1_orig_weight.png']);
 for n=1:1
@@ -94,11 +93,12 @@ end
 for n=1:N
     
     % compute the distance transform image
-    [D_euclidean,D_quasiEuclidean] = distance_map(ims{n});
+    [D_euclidean,D_euclidean_compl] = distance_map(ims{n});
     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
     % normalizing the distance map value
     D_euclidean = D_euclidean(:)/norm(D_euclidean(:));
-    feats{n}  = [ims{n}(:) D_euclidean(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)];
+    D_euclidean_compl= D_euclidean_compl(:)/norm(D_euclidean_compl(:));
+    feats{n}  = [ims{n}(:) D_euclidean(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; % D_euclidean_compl(:)
     fprintf('features computed\n');    
 end
     fprintf('end dataset\n');
@@ -109,9 +109,11 @@ for n=1:N
     
     [ly lx] = size(labels{n});
     dist_map = reshape(feats{n}(:,2),ly,lx);
+%     dist_map_compl = reshape(feats{n}(:,3),ly,lx);
     pca_hor = reshape(feats{n}(:,3),ly,lx);
     pca_ver = reshape(feats{n}(:,4),ly,lx);
-    figure('Name', 'Features used'), subplot(1,3,1), subimage(mat2gray(dist_map)), title('Distance map')
+    figure('Name', 'Features used'), subplot(1,3,1), subimage(mat2gray(dist_map)), title('Distance map'), hold on, imcontour(dist_map)
+%     subplot(2,2,2), subimage(mat2gray(dist_map_compl)), title('Distance map complementary'), hold on, imcontour(dist_map_compl)
     subplot(1,3,2), subimage(mat2gray(pca_hor)), title('First pca component')
     subplot(1,3,3), subimage(mat2gray(pca_ver)), title('Second pca component')
 end
@@ -240,8 +242,15 @@ for n=1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test,models_test{n},loss_spec,crf_type,rho);
     % choose between max value (taking the corresponding index-->class) and
     % mean value directly corresponding to the probability predicted label
-    % [label_pred] = mean(b_i_reshape,3);
     [~,label_pred] = max(b_i,[],1);
+    for b = 1:size(label_pred,2)
+        if(label_pred(b)~=1 && label_pred(b)~=4)
+            b_i_ratio = b_i(3,b)/b_i(2,b); % ratio between sidewalk belief and street belief
+            if(b_i_ratio>0.375)
+                label_pred(b) = 3;
+            end
+        end
+    end
     b_i_reshape = reshape(b_i',[ly lx nvals]);
     label_pred = reshape(label_pred,ly,lx);
     error_downsample = mean(label_pred(:)~=labels_test{n}(:))
@@ -265,9 +274,9 @@ for n=1:length(feats_test)
     subplot(2,2,1); imshow(reshape(b_i(1,:),ly,lx));
     title('(class 1-background)');
     subplot(2,2,2); imshow(reshape(b_i(2,:),ly,lx));
-    title('(class 2-street)'); % curb side
+    title('(class 2-street)'); % street
     subplot(2,2,3); imshow(reshape(b_i(3,:),ly,lx));
-    title('(class 3-sidewalk)'); % wall side
+    title('(class 3-sidewalk)'); % sidewalk
     subplot(2,2,4); imshow(reshape(b_i(4,:),ly,lx));
     title('(class 4-buildings)');
     
@@ -279,6 +288,6 @@ for n=1:length(feats_test)
     title('true label');
     subplot(M,2,1+ M); miximshow(reshape(label_pred(:),ly,lx),nvals);
     title('predicted label');
-    % subplot(M,3,1+ 2*M);  imshow(reshape(label_pred(:),ly,lx)); % -1 to the label just in case they were computed with max()
+    % subplot(M,3,1+ 2*M);  imshow(reshape(label_pred(:),ly,lx));
 end
 end
