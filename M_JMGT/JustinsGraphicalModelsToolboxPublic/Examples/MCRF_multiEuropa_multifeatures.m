@@ -35,7 +35,7 @@ for n=1:N
     W = double(imread(([imweightdir imweight_names(n).name])))/255;
     wimg = rgb2gray(W);
     wimgs{n}  = W; % weights images to be used as filter or unary features
-    figure('Name','Loading weights...','NumberTitle','off'); imshow(wimgs{n});
+%     figure('Name','Loading weights...','NumberTitle','off'); imshow(wimgs{n});
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
 %     limg = rgb2gray(L);
@@ -43,6 +43,7 @@ for n=1:N
     figure('Name','Loading label RGB...','NumberTitle','off'); imshow(labelsRGB{n});
     
 end
+%%
 % load weights
 imweightdir = [ path_name '/train/portion/new/']; % Loading the weights images correspondent to the original features
 imweight_names = dir([imweightdir '*0.1_orig_weight.png']);
@@ -98,7 +99,7 @@ for n=1:N
     % normalizing the distance map value
     D_euclidean = D_euclidean(:)/norm(D_euclidean(:));
     D_euclidean_compl= D_euclidean_compl(:)/norm(D_euclidean_compl(:));
-    feats{n}  = [ims{n}(:) D_euclidean(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; % D_euclidean_compl(:)
+    feats{n}  = [ims{n}(:) D_euclidean_compl(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; % D_euclidean_compl(:)
     fprintf('features computed\n');    
 end
     fprintf('end dataset\n');
@@ -108,12 +109,13 @@ fprintf('Plotting features computed\n');
 for n=1:N
     
     [ly lx] = size(labels{n});
-    dist_map = reshape(feats{n}(:,2),ly,lx);
-%     dist_map_compl = reshape(feats{n}(:,3),ly,lx);
+%     dist_map = reshape(feats{n}(:,2),ly,lx);
+    dist_map_compl = reshape(feats{n}(:,2),ly,lx);
     pca_hor = reshape(feats{n}(:,3),ly,lx);
     pca_ver = reshape(feats{n}(:,4),ly,lx);
-    figure('Name', 'Features used'), subplot(1,3,1), subimage(mat2gray(dist_map)), title('Distance map'), hold on, imcontour(dist_map)
-%     subplot(2,2,2), subimage(mat2gray(dist_map_compl)), title('Distance map complementary'), hold on, imcontour(dist_map_compl)
+    figure('Name', 'Features used')
+%     subplot(1,3,1), subimage(mat2gray(dist_map)), title('Distance map'), hold on, imcontour(dist_map)
+    subplot(1,3,1), subimage(mat2gray(dist_map_compl)), title('Distance map complementary'), hold on, imcontour(dist_map_compl)
     subplot(1,3,2), subimage(mat2gray(pca_hor)), title('First pca component')
     subplot(1,3,3), subimage(mat2gray(pca_ver)), title('Second pca component')
 end
