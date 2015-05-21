@@ -3,8 +3,10 @@ function MCRF_multiEuropa_multifeatures(path_name)
 %% load the data and computing labels and features map
 imdir = [ path_name '/train/portion/new/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
 im_names = dir([imdir '*0.1.png']);
+imstepdir = [ path_name '/train/portion/new/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
+imstep_names = dir([imstepdir '*0.1_step.png']);
 imweightdir = [ path_name '/train/portion/new/']; % Loading the weights images correspondent to the original features
-imweight_names = dir([imweightdir '*0.1_weight.png']);
+imweight_names = dir([imweightdir '*0.1_W.png']);
 labdir = [ path_name '/labels/portion/new/']; % same name for entire_log_new or portion
 lab_names = dir([labdir '*multi4AREA_GT.png']);
 
@@ -17,7 +19,7 @@ cmap = [1 1 1; 1 0 0; 0 0 1; 0 1 0]; % to represent the label
 
 fprintf('loading data and computing feature maps...\n');
 % load true label x and input image from europa2_sidewalktetector
-ims = cell(1,N);
+ims = cell(2,N);
 labelsRGB = cell(1,N);
 labels0 = cell(1,N);
 labels = cell(1,N);
@@ -26,11 +28,15 @@ weights = cell(1,N);
 efeats = cell(1,N);
 for n=1:N
     
-    % load input images
+    % load input images (two main features)
     I = double(imread(([imdir im_names(n).name])))/255;    
     img = rgb2gray(I);
-    ims{n}  = img; % input images x
-    figure('Name','Loading input...','NumberTitle','off'); imshow(ims{n});
+    ims{1,n}  = img; % input images, first feature (heightGradientChange)
+    figure('Name','Loading input feature 1 [heightGradientChange]...','NumberTitle','off'); imshow(ims{1,n});
+    Istep = double(imread(([imstepdir imstep_names(n).name])))/255;    
+    imgstep = rgb2gray(Istep);
+    ims{2,n}  = imgstep; % input images, second feature (stepHeightInVicinity)
+    figure('Name','Loading input feature 2 [stepHeightInVicinity]...','NumberTitle','off'); imshow(ims{2,n});
     % load weights
     W = double(imread(([imweightdir imweight_names(n).name])))/255;
     wimg = rgb2gray(W);
@@ -38,19 +44,16 @@ for n=1:N
 %     figure('Name','Loading weights...','NumberTitle','off'); imshow(wimgs{n});
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
-%     limg = rgb2gray(L);
     labelsRGB{n}  = L; % true label GT
     figure('Name','Loading label RGB...','NumberTitle','off'); imshow(labelsRGB{n});
     
 end
 %%
-% load weights
-imweightdir = [ path_name '/train/portion/new/']; % Loading the weights images correspondent to the original features
-imweight_names = dir([imweightdir '*0.1_orig_weight.png']);
-for n=1:1
-    W = double(imread(([imweightdir imweight_names(n).name])))/255;
-    figure('Name','Loading original weights...','NumberTitle','off'); imshow(W);
-end
+% load complete log weights and step features
+    WEIGHTS = double(imread('./Dataset/europaData/entire_log_new/res10/01_mapImage0.1_W.png'))/255;
+    figure('Name','Loading original weights...','NumberTitle','off'); imshow(WEIGHTS);
+    STEPS = double(imread('./Dataset/europaData/entire_log_new/res10/01_mapImage0.1_step.png'))/255;
+    figure('Name','Loading original stepInVicinity features...','NumberTitle','off'); imshow(STEPS);
 
 %% 
 % The labels representation consists on values from  1 to nvals, with 0 for unlabeled
@@ -58,7 +61,8 @@ for n=1:N
     fprintf('new image\n');
     % reduce resolution for speed (mostly in case we use the different GRIDMAPS images)
     % DO NOT REDUCE when using small portion of the entire log if it's 0.5
-    ims{n}    = imresize(ims{n},rez,'bilinear');
+    ims{1,n} = imresize(ims{1,n},rez,'bilinear');
+    ims{2,n} = imresize(ims{2,n},rez,'bilinear');
 
     % compute the label as a ly*lx matrix, whose values are classes depending on the 3-rgb channels original labels0 images
     [ly lx lz] = size(labelsRGB{n});
@@ -83,7 +87,7 @@ for n=1:N
 %     colormap(cmap); miximshow(reshape(l,ly,lx),nvals);
     labels0{n} = l;
     % DO NOT REDUCE when using small portion of the entire log if it's 0.5
-    labels{n} = imresize(labels0{n},rez,'nearest');
+    labels{n} = imresize(labels0{n},rez,'bilinear');
 %     labels{n} = labels0{n};
     fprintf('label computed\n');
 end
@@ -94,12 +98,12 @@ end
 for n=1:N
     
     % compute the distance transform image
-    [D_euclidean,D_euclidean_compl] = distance_map(ims{n});
-    [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
+    [D_euclidean,D_euclidean_compl] = distance_map(ims{1,n});
+    [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{1,n});
     % normalizing the distance map value
     D_euclidean = D_euclidean(:)/norm(D_euclidean(:));
     D_euclidean_compl= D_euclidean_compl(:)/norm(D_euclidean_compl(:));
-    feats{n}  = [ims{n}(:) D_euclidean_compl(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; % D_euclidean_compl(:)
+    feats{n}  = [ims{1,n}(:) ims{2,n}(:) D_euclidean_compl(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; % D_euclidean_compl(:)
     fprintf('features computed\n');    
 end
     fprintf('end dataset\n');
@@ -109,10 +113,10 @@ fprintf('Plotting features computed\n');
 for n=1:N
     
     [ly lx] = size(labels{n});
-%     dist_map = reshape(feats{n}(:,2),ly,lx);
-    dist_map_compl = reshape(feats{n}(:,2),ly,lx);
-    pca_hor = reshape(feats{n}(:,3),ly,lx);
-    pca_ver = reshape(feats{n}(:,4),ly,lx);
+%     dist_map = reshape(feats{n}(:,3),ly,lx);
+    dist_map_compl = reshape(feats{n}(:,3),ly,lx);
+    pca_hor = reshape(feats{n}(:,4),ly,lx);
+    pca_ver = reshape(feats{n}(:,5),ly,lx);
     figure('Name', 'Features used')
 %     subplot(1,3,1), subimage(mat2gray(dist_map)), title('Distance map'), hold on, imcontour(dist_map)
     subplot(1,3,1), subimage(mat2gray(dist_map_compl)), title('Distance map complementary'), hold on, imcontour(dist_map_compl)
