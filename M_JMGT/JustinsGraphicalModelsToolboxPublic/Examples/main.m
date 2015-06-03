@@ -22,9 +22,11 @@ path_name = './Dataset/europaData/entire_log_new/res10/';
 % [tried with new feats, really bad!)
 % MCRF_binaryEuropa(path_name);  
 
-% when using MULTI segmentation with two or more training examples and different testing dataset(entire log new[entire image or small portion/just curb or area])
-MCRF_multiEuropa(path_name); 
+% when using MULTI segmentation with two or more training examples and different testing dataset(entire log new[entire image or small portion/just curb&co or area(4CLASSES)])
+% MCRF_multiEuropa(path_name); 
 
+% when using MULTI segmentation with MULTI FEATURES FROM SIDEWALKDETECTOR with two or more training examples and different testing dataset(entire log new[entire image or small portion/just curb&co or area(4CLASSES)])
+MCRF_multiEuropa_multifeatures(path_name); 
 %% 
 % clc
 % clear all

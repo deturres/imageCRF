@@ -14,46 +14,42 @@ lab_names = dir([labdir '*multi4AREA_GT.png']);
 N     = length(im_names);  % size of training images
 rho   = .5; % TRW edge appearance probability
 nvals = 4; % curb/sidewalkWall/buildings/background (0 in case unlabeled)
-rez    = .6; % how much resolution percentage to use
+rez    = .5; % how much resolution percentage to use
 cmap = [1 1 1; 1 0 0; 0 0 1; 0 1 0]; % to represent the label
 
 fprintf('loading data and computing feature maps...\n');
-% load true label x and input image from europa2_sidewalktetector
-ims = cell(2,N);
+% load true label and input images from europa2_sidewalktetector
+ims = cell(1,N);
+ims2 = cell(1,N);
 labelsRGB = cell(1,N);
 labels0 = cell(1,N);
 labels = cell(1,N);
 feats = cell(1,N);
-weights = cell(1,N);
+wimgs = cell(1,N);
 efeats = cell(1,N);
 for n=1:N
     
     % load input images (two main features)
     I = double(imread(([imdir im_names(n).name])))/255;    
     img = rgb2gray(I);
-    ims{1,n}  = img; % input images, first feature (heightGradientChange)
-    figure('Name','Loading input feature 1 [heightGradientChange]...','NumberTitle','off'); imshow(ims{1,n});
+    ims{n}  = img; % input images, first feature (heightGradientChange)
+    figure('Name','Loading input feature 1 [heightGradientChange]...','NumberTitle','off'); imshow(ims{n});
     Istep = double(imread(([imstepdir imstep_names(n).name])))/255;    
     imgstep = rgb2gray(Istep);
-    ims{2,n}  = imgstep; % input images, second feature (stepHeightInVicinity)
-    figure('Name','Loading input feature 2 [stepHeightInVicinity]...','NumberTitle','off'); imshow(ims{2,n});
+    ims2{n}  = imgstep; % input images, second feature (stepHeightInVicinity)
+    figure('Name','Loading input feature 2 [stepHeightInVicinity]...','NumberTitle','off'); imshow(ims2{n});
     % load weights
     W = double(imread(([imweightdir imweight_names(n).name])))/255;
     wimg = rgb2gray(W);
-    wimgs{n}  = W; % weights images to be used as filter or unary features
-%     figure('Name','Loading weights...','NumberTitle','off'); imshow(wimgs{n});
+    wimgs{n}  = wimg; % weights images to be used as filter or unary features
+    figure('Name','Loading weights...','NumberTitle','off'); imshow(wimgs{n});
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
     labelsRGB{n}  = L; % true label GT
     figure('Name','Loading label RGB...','NumberTitle','off'); imshow(labelsRGB{n});
     
 end
-%%
-% load complete log weights and step features
-    WEIGHTS = double(imread('./Dataset/europaData/entire_log_new/res10/01_mapImage0.1_W.png'))/255;
-    figure('Name','Loading original weights...','NumberTitle','off'); imshow(WEIGHTS);
-    STEPS = double(imread('./Dataset/europaData/entire_log_new/res10/01_mapImage0.1_step.png'))/255;
-    figure('Name','Loading original stepInVicinity features...','NumberTitle','off'); imshow(STEPS);
+
 
 %% 
 % The labels representation consists on values from  1 to nvals, with 0 for unlabeled
@@ -61,8 +57,9 @@ for n=1:N
     fprintf('new image\n');
     % reduce resolution for speed (mostly in case we use the different GRIDMAPS images)
     % DO NOT REDUCE when using small portion of the entire log if it's 0.5
-    ims{1,n} = imresize(ims{1,n},rez,'bilinear');
-    ims{2,n} = imresize(ims{2,n},rez,'bilinear');
+    ims{n}  = imresize(ims{n},rez,'bilinear');
+    ims2{n} = imresize(ims2{n},rez,'bilinear');
+    wimgs{n} = imresize(wimgs{n},rez,'bilinear');
 
     % compute the label as a ly*lx matrix, whose values are classes depending on the 3-rgb channels original labels0 images
     [ly lx lz] = size(labelsRGB{n});
@@ -87,7 +84,7 @@ for n=1:N
 %     colormap(cmap); miximshow(reshape(l,ly,lx),nvals);
     labels0{n} = l;
     % DO NOT REDUCE when using small portion of the entire log if it's 0.5
-    labels{n} = imresize(labels0{n},rez,'bilinear');
+    labels{n} = imresize(labels0{n},rez,'nearest');
 %     labels{n} = labels0{n};
     fprintf('label computed\n');
 end
@@ -98,31 +95,15 @@ end
 for n=1:N
     
     % compute the distance transform image
-    [D_euclidean,D_euclidean_compl] = distance_map(ims{1,n});
-    [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{1,n});
+    [D_euclidean,D_euclidean_compl] = distance_map(ims{n});
+    [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
     % normalizing the distance map value
     D_euclidean = D_euclidean(:)/norm(D_euclidean(:));
     D_euclidean_compl= D_euclidean_compl(:)/norm(D_euclidean_compl(:));
-    feats{n}  = [ims{1,n}(:) ims{2,n}(:) D_euclidean_compl(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; % D_euclidean_compl(:)
+    feats{n}  = [ims{n}(:) ims2{n}(:) D_euclidean_compl(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)];
     fprintf('features computed\n');    
 end
     fprintf('end dataset\n');
-
-%% plot features
-fprintf('Plotting features computed\n');    
-for n=1:N
-    
-    [ly lx] = size(labels{n});
-%     dist_map = reshape(feats{n}(:,3),ly,lx);
-    dist_map_compl = reshape(feats{n}(:,3),ly,lx);
-    pca_hor = reshape(feats{n}(:,4),ly,lx);
-    pca_ver = reshape(feats{n}(:,5),ly,lx);
-    figure('Name', 'Features used')
-%     subplot(1,3,1), subimage(mat2gray(dist_map)), title('Distance map'), hold on, imcontour(dist_map)
-    subplot(1,3,1), subimage(mat2gray(dist_map_compl)), title('Distance map complementary'), hold on, imcontour(dist_map_compl)
-    subplot(1,3,2), subimage(mat2gray(pca_hor)), title('First pca component')
-    subplot(1,3,3), subimage(mat2gray(pca_ver)), title('Second pca component')
-end
 
 %% creating the models
 % the images come in slightly different sizes, so we need to make many models
@@ -131,7 +112,7 @@ end
 % very big model_hash in case of entire_log_new
 %   model_hash = repmat({[]},1000,1150);
 
-%very small model_hash in case of small portion of entire_log_new
+% smaller model_hash in case of small portion of entire_log_new
 model_hash = repmat({[]},500,500);
 
 fprintf('building models...\n')
@@ -172,9 +153,14 @@ k = 1;
 K = N;
 [who_train who_test] = kfold_sets(N,K,k)
 
+% decide which features to use for the training
+using_feats = cell(1,N);
+for n=1:N
+    using_feats{n} = feats{n}(:,1:4);
+end
 
 ims_train     = ims(who_train);
-feats_train   = feats(who_train);
+feats_train   = using_feats(who_train);
 efeats_train  = []; % efeats(who_train);
 labels_train  = labels(who_train);
 labels0_train = labels0(who_train);
@@ -182,12 +168,12 @@ models_train  = models(who_train);
 % imshow(ims_train{1})
 
 ims_test     = ims(who_test);
-feats_test   = feats(who_test);
+feats_test   = using_feats(who_test);
 efeats_test  = []; % efeats(who_test);
 labels_test  = labels(who_test);
 labels0_test = labels0(who_test);
 models_test  = models(who_test);
-% imshow(ims_test{:})
+% imshow(ims_test{1})
 
     % visualization function.
     % This takes a cell array of predicted beliefs as input, and shows them to the screen during training.         
@@ -206,6 +192,26 @@ models_test  = models(who_test);
 %         xlabel('top: marginals  middle: input  bottom: labels')
 %         drawnow
 %     end
+
+%% plot features
+fprintf('Plotting features computed\n');    
+for n=1:N
+    
+    [ly lx] = size(labels{n});
+    feat1 = reshape(using_feats{n}(:,1),ly,lx);
+    feat2 = reshape(using_feats{n}(:,2),ly,lx);
+    dist_map = reshape(using_feats{n}(:,3),ly,lx);
+    pca_hor = reshape(using_feats{n}(:,4),ly,lx);
+%     pca_ver = reshape(using_feats{n}(:,5),ly,lx);
+    figure('Name', 'Features used'), 
+    subplot(2,2,1), subimage(mat2gray(feat1)), title('feat1')
+    subplot(2,2,2), subimage(mat2gray(feat2)), title('feat2')
+    
+    subplot(2,2,3), subimage(mat2gray(dist_map)), title('Distance map')
+    subplot(2,2,4), subimage(mat2gray(pca_hor)), title('First pca component')
+%     subplot(2,3,5), subimage(mat2gray(pca_ver)), title('Second pca component')
+end
+
 
 %% %-----------------training----------------%
 
@@ -249,14 +255,22 @@ for n=1:length(feats_test)
     % choose between max value (taking the corresponding index-->class) and
     % mean value directly corresponding to the probability predicted label
     [~,label_pred] = max(b_i,[],1);
+    ratio_confidence = 0.375;
     for b = 1:size(label_pred,2)
         if(label_pred(b)~=1 && label_pred(b)~=4)
             b_i_ratio = b_i(3,b)/b_i(2,b); % ratio between sidewalk belief and street belief
-            if(b_i_ratio>0.375)
+            if(b_i_ratio>ratio_confidence)
                 label_pred(b) = 3;
             end
         end
-    end
+    end    
+    
+    %loading weights to give more confidence to label=1(background0 if the
+    % weights features has value = 1 (no information from the sidewalk detector)
+    %[...]
+    
+    
+    
     b_i_reshape = reshape(b_i',[ly lx nvals]);
     label_pred = reshape(label_pred,ly,lx);
     error_downsample = mean(label_pred(:)~=labels_test{n}(:))
@@ -272,8 +286,9 @@ for n=1:length(feats_test)
     fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
     
     figure('Name','Testing..input image','NumberTitle','off');
-    imshow(reshape(feats_test{n}(:,1),ly,lx));
-    
+    subplot(1,2,1); imshow(reshape(feats_test{n}(:,1),ly,lx));
+    subplot(1,2,2); imshow(reshape(feats_test{n}(:,2),ly,lx));
+
     M = length(feats_test);
     % visualizing final predicted marginal and label
     figure('Name','Testing..predicted marginalbelief','NumberTitle','off');
@@ -294,6 +309,5 @@ for n=1:length(feats_test)
     title('true label');
     subplot(M,2,1+ M); miximshow(reshape(label_pred(:),ly,lx),nvals);
     title('predicted label');
-    % subplot(M,3,1+ 2*M);  imshow(reshape(label_pred(:),ly,lx));
 end
 end

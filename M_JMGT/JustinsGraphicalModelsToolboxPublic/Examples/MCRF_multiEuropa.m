@@ -2,7 +2,7 @@ function MCRF_multiEuropa(path_name)
 
 %% load the data and computing labels and features map
 imdir = [ path_name '/train/portion/new/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
-im_names = dir([imdir '*.png']); 
+im_names = dir([imdir '*0.1.png']); 
 labdir = [ path_name '/labels/portion/new/']; % same name for entire_log_new or portion
 lab_names = dir([labdir '*multi4AREA_GT.png']);
 
@@ -80,7 +80,7 @@ end
 for n=1:N
     
     % compute the distance transform image
-    [D_euclidean,D_quasiEuclidean] = distance_map(ims{n});
+    [D_euclidean,D_euclidean_compl] = distance_map(ims{n});
     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
     % normalizing the distance map value
     D_euclidean = D_euclidean(:)/norm(D_euclidean(:));
@@ -109,7 +109,7 @@ end
 % very big model_hash in case of entire_log_new
 %   model_hash = repmat({[]},1000,1150);
 
-%very small model_hash in case of small portion of entire_log_new
+% smaller model_hash in case of small portion of entire_log_new
 model_hash = repmat({[]},500,500);
 
 fprintf('building models...\n')
@@ -165,7 +165,7 @@ efeats_test  = []; % efeats(who_test);
 labels_test  = labels(who_test);
 labels0_test = labels0(who_test);
 models_test  = models(who_test);
-% imshow(ims_test{:})
+% imshow(ims_test{1})
 
     % visualization function.
     % This takes a cell array of predicted beliefs as input, and shows them to the screen during training.         
@@ -251,9 +251,9 @@ for n=1:length(feats_test)
     subplot(2,2,1); imshow(reshape(b_i(1,:),ly,lx));
     title('(class 1-background)');
     subplot(2,2,2); imshow(reshape(b_i(2,:),ly,lx));
-    title('(class 2-street)'); % curb side
+    title('(class 2-street)'); % street
     subplot(2,2,3); imshow(reshape(b_i(3,:),ly,lx));
-    title('(class 3-sidewalk)'); % wall side
+    title('(class 3-sidewalk)'); % sidewalk
     subplot(2,2,4); imshow(reshape(b_i(4,:),ly,lx));
     title('(class 4-buildings)');
     
@@ -265,6 +265,6 @@ for n=1:length(feats_test)
     title('true label');
     subplot(M,2,1+ M); miximshow(reshape(label_pred(:),ly,lx),nvals);
     title('predicted label');
-    % subplot(M,3,1+ 2*M);  imshow(reshape(label_pred(:),ly,lx)); % -1 to the label just in case they were computed with max()
+    % subplot(M,3,1+ 2*M);  imshow(reshape(label_pred(:),ly,lx));
 end
 end
