@@ -252,8 +252,12 @@ fprintf('get the marginals for test images...\n');
 for n=1:length(feats_test)
     [ly lx] = size(labels_test{n});
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test,models_test{n},loss_spec,crf_type,rho);
-    % choose between max value (taking the corresponding index-->class) and
-    % mean value directly corresponding to the probability predicted label
+    
+    
+    
+%  to be included inside a smoothing_result function
+    
+    % max value (taking the corresponding index-->class)
     [~,label_pred] = max(b_i,[],1);
     ratio_confidence = 0.375;
     for b = 1:size(label_pred,2)
@@ -265,12 +269,23 @@ for n=1:length(feats_test)
         end
     end    
     
-    %loading weights to give more confidence to label=1(background0 if the
-    % weights features has value = 1 (no information from the sidewalk detector)
-    %[...]
+    % loading weights to give more confidence to label=1(background if the
+    % weights features has value = 1 and the ;learning didnt recognized was
+    % buildings or background (no information from the sidewalk detector)
+
+    weights = wimgs(who_test);
+    w = weights{n}(:);
+    size(w)
+    for i = 1:size(w)
+        if(w(i)>0.99 && label_pred(i)~=4)
+          label_pred(i) = 1;
+        end
+    end
     
-    
-    
+% untill here 
+
+
+
     b_i_reshape = reshape(b_i',[ly lx nvals]);
     label_pred = reshape(label_pred,ly,lx);
     error_downsample = mean(label_pred(:)~=labels_test{n}(:))
