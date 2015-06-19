@@ -1,13 +1,13 @@
 function MCRF_multiEuropa_multifeatures(path_name)
 
 %% load the data and computing labels and features map
-imdir = [ path_name '/train/portion/new/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
+imdir = [ path_name 'train/portion/new/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
 im_names = dir([imdir '*0.1.png']);
-imstepdir = [ path_name '/train/portion/new/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
+imstepdir = [ path_name 'train/portion/new/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
 imstep_names = dir([imstepdir '*0.1_step.png']);
-imweightdir = [ path_name '/train/portion/new/']; % Loading the weights images correspondent to the original features
+imweightdir = [ path_name 'train/portion/new/']; % Loading the weights images correspondent to the original features
 imweight_names = dir([imweightdir '*0.1_W.png']);
-labdir = [ path_name '/labels/portion/new/']; % same name for entire_log_new or portion
+labdir = [ path_name 'labels/portion/new/']; % same name for entire_log_new or portion
 lab_names = dir([labdir '*multi4AREA_GT.png']);
 
 % parameters of the problem
@@ -275,7 +275,6 @@ for n=1:length(feats_test)
 
     weights = wimgs(who_test);
     w = weights{n}(:);
-    size(w)
     for i = 1:size(w)
         if(w(i)>0.99 && label_pred(i)~=4)
           label_pred(i) = 1;
