@@ -33,20 +33,20 @@ for n=1:N
     I = double(imread(([imdir im_names(n).name])))/255;    
     img = rgb2gray(I);
     ims{n}  = img; % input images, first feature (heightGradientChange)
-    figure('Name','Loading input feature 1 [heightGradientChange]...','NumberTitle','off'); imshow(ims{n});
+%     figure('Name','Loading input feature 1 [heightGradientChange]...','NumberTitle','off'); imshow(ims{n});
     Istep = double(imread(([imstepdir imstep_names(n).name])))/255;    
     imgstep = rgb2gray(Istep);
     ims2{n}  = imgstep; % input images, second feature (stepHeightInVicinity)
-    figure('Name','Loading input feature 2 [stepHeightInVicinity]...','NumberTitle','off'); imshow(ims2{n});
+%     figure('Name','Loading input feature 2 [stepHeightInVicinity]...','NumberTitle','off'); imshow(ims2{n});
     % load weights
     W = double(imread(([imweightdir imweight_names(n).name])))/255;
     wimg = rgb2gray(W);
     wimgs{n}  = wimg; % weights images to be used as filter or unary features
-    figure('Name','Loading weights...','NumberTitle','off'); imshow(wimgs{n});
+%     figure('Name','Loading weights...','NumberTitle','off'); imshow(wimgs{n});
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
     labelsRGB{n}  = L; % true label GT
-    figure('Name','Loading label RGB...','NumberTitle','off'); imshow(labelsRGB{n});
+%     figure('Name','Loading label RGB...','NumberTitle','off'); imshow(labelsRGB{n});
     
 end
 
@@ -95,12 +95,14 @@ end
 for n=1:N
     
     % compute the distance transform image
-    [D_euclidean,D_euclidean_compl] = distance_map(ims{n});
+    [D_euclidean,D_euclidean_compl,D_euclidean_signed] = distance_map(ims{n});
     [hor_efeats_ij ver_efeats_ij] = evaluate_pca(ims{n});
     % normalizing the distance map value
-    D_euclidean = D_euclidean(:)/norm(D_euclidean(:));
-    D_euclidean_compl= D_euclidean_compl(:)/norm(D_euclidean_compl(:));
-    feats{n}  = [ims{n}(:) ims2{n}(:) D_euclidean_compl(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)];
+    %D_euclidean = D_euclidean(:)/norm(D_euclidean(:));
+    D_euclidean_compl = D_euclidean_compl(:)/norm(D_euclidean_compl(:));
+%     D_euclidean_signed = D_euclidean_signed(:)/norm(D_euclidean_signed(:));
+
+    feats{n}  = [ims{n}(:) ims2{n}(:) D_euclidean_signed(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %D_euclidean_compl(:)
     fprintf('features computed\n');    
 end
     fprintf('end dataset\n');
@@ -201,13 +203,15 @@ for n=1:N
     feat1 = reshape(using_feats{n}(:,1),ly,lx);
     feat2 = reshape(using_feats{n}(:,2),ly,lx);
     dist_map = reshape(using_feats{n}(:,3),ly,lx);
+%     dist_map = dist_map(:)/norm(dist_map(:));
+
     pca_hor = reshape(using_feats{n}(:,4),ly,lx);
 %     pca_ver = reshape(using_feats{n}(:,5),ly,lx);
     figure('Name', 'Features used'), 
     subplot(2,2,1), subimage(mat2gray(feat1)), title('feat1')
     subplot(2,2,2), subimage(mat2gray(feat2)), title('feat2')
     
-    subplot(2,2,3), subimage(mat2gray(dist_map)), title('Distance map')
+    subplot(2,2,3), subimage(mat2gray(dist_map)), title('Distance map'), % hold on, imcontour(dist_map);
     subplot(2,2,4), subimage(mat2gray(pca_hor)), title('First pca component')
 %     subplot(2,3,5), subimage(mat2gray(pca_ver)), title('Second pca component')
 end
