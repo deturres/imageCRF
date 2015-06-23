@@ -7,6 +7,8 @@ imstepdir = [ path_name 'train/portion/new/']; % Valid for entire log new datase
 imstep_names = dir([imstepdir '*0.1_step.png']);
 imweightdir = [ path_name 'train/portion/new/']; % Loading the weights images correspondent to the original features
 imweight_names = dir([imweightdir '*0.1_W.png']);
+imangledir = [ path_name 'train/portion/new/']; % Loading the weights images correspondent to the original features
+imangle_names = dir([imangledir '*0.1_A.png']);
 labdir = [ path_name 'labels/portion/new/']; % same name for entire_log_new or portion
 lab_names = dir([labdir '*multi4AREA_GT.png']);
 
@@ -21,6 +23,7 @@ fprintf('loading data and computing feature maps...\n');
 % load true label and input images from europa2_sidewalktetector
 ims = cell(1,N);
 ims2 = cell(1,N);
+ims3 = cell(1,N);
 labelsRGB = cell(1,N);
 labels0 = cell(1,N);
 labels = cell(1,N);
@@ -29,7 +32,7 @@ wimgs = cell(1,N);
 efeats = cell(1,N);
 for n=1:N
     
-    % load input images (two main features)
+    % load input images (three main features)
     I = double(imread(([imdir im_names(n).name])))/255;    
     img = rgb2gray(I);
     ims{n}  = img; % input images, first feature (heightGradientChange)
@@ -38,11 +41,18 @@ for n=1:N
     imgstep = rgb2gray(Istep);
     ims2{n}  = imgstep; % input images, second feature (stepHeightInVicinity)
 %     figure('Name','Loading input feature 2 [stepHeightInVicinity]...','NumberTitle','off'); imshow(ims2{n});
+    % load angles
+    A = double(imread(([imangledir imangle_names(n).name])))/255;
+    imgangle = rgb2gray(A);
+    ims3{n}  = imgangle; % input images, third feature (angle wrt roads in vicinity)
+%     figure('Name','Loading input feature 3 [angleWRTroadsInVicinity]...','NumberTitle','off'); imshow(ims3{n});
+
     % load weights
     W = double(imread(([imweightdir imweight_names(n).name])))/255;
     wimg = rgb2gray(W);
     wimgs{n}  = wimg; % weights images to be used as filter or unary features
 %     figure('Name','Loading weights...','NumberTitle','off'); imshow(wimgs{n});
+
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
     labelsRGB{n}  = L; % true label GT
@@ -50,6 +60,11 @@ for n=1:N
     
 end
 
+%%
+
+A = double(imread(('./Dataset/europaData/entire_log_new/res10/train/01_mapImage0.1_A.png')))/255;
+imgangle = rgb2gray(A);
+figure('Name','Loading angleWRTroadsInVicinity...','NumberTitle','off'); imshow(imgangle);
 
 %% 
 % The labels representation consists on values from  1 to nvals, with 0 for unlabeled
