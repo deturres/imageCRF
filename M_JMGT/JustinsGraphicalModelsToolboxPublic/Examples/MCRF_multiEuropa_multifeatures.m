@@ -1,5 +1,20 @@
 function MCRF_multiEuropa_multifeatures(path_name)
 
+%% just temporarly done to save the correct angles features
+A = double(imread(('./Dataset/europaData/entire_log_new/res10/01_mapImage0.1_AfromCode.png')))/255;
+imgangle = rgb2gray(A);
+% figure('Name','Loading angleWRTroadsInVicinity...','NumberTitle','off'); imshow(imgangle);
+
+% load as data
+angdir = [ path_name ];
+ang_names = dir([angdir '*0.1.png.dat']); %% the dat file is built up row_wise
+ang = importdata([angdir ang_names.name]);
+ang_img = imcomplement(reshape(ang, size(imgangle,2),size(imgangle,1)));
+ang_img = ang_img';
+figure('Name','Loading angleWRTroadsInVicinity load from dat file...','NumberTitle','off'); imshow(ang_img);
+imwrite(ang_img,'./Dataset/europaData/entire_log_new/res10/train/01_mapImage0.1_A.png', 'png');
+
+
 %% load the data and computing labels and features map
 imdir = [ path_name 'train/portion/new/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
 im_names = dir([imdir '*0.1.png']);
@@ -43,8 +58,8 @@ for n=1:N
 %     figure('Name','Loading input feature 2 [stepHeightInVicinity]...','NumberTitle','off'); imshow(ims2{n});
     % load angles
     A = double(imread(([imangledir imangle_names(n).name])))/255;
-    imgangle = rgb2gray(A);
-    ims3{n}  = imgangle; % input images, third feature (angle wrt roads in vicinity)
+%     imgangle = rgb2gray(A);
+    ims3{n}  = A; % input images, third feature (angle wrt roads in vicinity)
 %     figure('Name','Loading input feature 3 [angleWRTroadsInVicinity]...','NumberTitle','off'); imshow(ims3{n});
 
     % load weights
@@ -60,12 +75,6 @@ for n=1:N
     
 end
 
-%%
-
-A = double(imread(('./Dataset/europaData/entire_log_new/res10/train/01_mapImage0.1_A.png')))/255;
-imgangle = rgb2gray(A);
-figure('Name','Loading angleWRTroadsInVicinity...','NumberTitle','off'); imshow(imgangle);
-
 %% 
 % The labels representation consists on values from  1 to nvals, with 0 for unlabeled
 for n=1:N
@@ -74,6 +83,8 @@ for n=1:N
     % DO NOT REDUCE when using small portion of the entire log if it's 0.5
     ims{n}  = imresize(ims{n},rez,'bilinear');
     ims2{n} = imresize(ims2{n},rez,'bilinear');
+    ims3{n} = imresize(ims3{n},rez,'bilinear');
+
     wimgs{n} = imresize(wimgs{n},rez,'bilinear');
 
     % compute the label as a ly*lx matrix, whose values are classes depending on the 3-rgb channels original labels0 images
@@ -117,7 +128,7 @@ for n=1:N
     D_euclidean_compl = D_euclidean_compl(:)/norm(D_euclidean_compl(:));
 %     D_euclidean_signed = D_euclidean_signed(:)/norm(D_euclidean_signed(:));
 
-    feats{n}  = [ims{n}(:) ims2{n}(:) D_euclidean_signed(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %D_euclidean_compl(:)
+    feats{n}  = [ims{n}(:) ims2{n}(:) ims3{n}(:) D_euclidean_signed(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %D_euclidean_compl(:)
     fprintf('features computed\n');    
 end
     fprintf('end dataset\n');
@@ -173,7 +184,7 @@ K = N;
 % decide which features to use for the training
 using_feats = cell(1,N);
 for n=1:N
-    using_feats{n} = feats{n}(:,1:4);
+    using_feats{n} = feats{n}(:,1:5);
 end
 
 ims_train     = ims(who_train);
@@ -217,42 +228,49 @@ for n=1:N
     [ly lx] = size(labels{n});
     feat1 = reshape(using_feats{n}(:,1),ly,lx);
     feat2 = reshape(using_feats{n}(:,2),ly,lx);
-    dist_map = reshape(using_feats{n}(:,3),ly,lx);
+    feat3 = reshape(using_feats{n}(:,3),ly,lx);
+    dist_map = reshape(using_feats{n}(:,4),ly,lx);
 %     dist_map = dist_map(:)/norm(dist_map(:));
-
-    pca_hor = reshape(using_feats{n}(:,4),ly,lx);
-%     pca_ver = reshape(using_feats{n}(:,5),ly,lx);
+    pca_hor = reshape(using_feats{n}(:,5),ly,lx);
+%     pca_ver = reshape(using_feats{n}(:,6),ly,lx);
     figure('Name', 'Features used'), 
-    subplot(2,2,1), subimage(mat2gray(feat1)), title('feat1')
-    subplot(2,2,2), subimage(mat2gray(feat2)), title('feat2')
-    
-    subplot(2,2,3), subimage(mat2gray(dist_map)), title('Distance map'), % hold on, imcontour(dist_map);
-    subplot(2,2,4), subimage(mat2gray(pca_hor)), title('First pca component')
-%     subplot(2,3,5), subimage(mat2gray(pca_ver)), title('Second pca component')
+    subplot(2,3,1), subimage(mat2gray(feat1)), title('feat1_gradient')
+    subplot(2,3,2), subimage(mat2gray(feat2)), title('feat2_steps')
+    subplot(2,3,3), subimage(mat2gray(feat3)), title('feat3_angles')
+
+    subplot(2,3,4), subimage(mat2gray(dist_map)), title('Distance map'), % hold on, imcontour(dist_map);
+    subplot(2,3,5), subimage(mat2gray(pca_hor)), title('First pca component')
+%     subplot(2,3,6), subimage(mat2gray(pca_ver)), title('Second pca component')
 end
 
 
 %% %-----------------training----------------%
 
 fprintf('training the model (this is slow!)...\n')
-% We pick a string to specify the loss and inference method. In this case, we choose truncated fitting with the clique logistic loss based on TRW with five iterations.
+% We pick a string to specify the loss and inference method. In this case, we choose truncated fitting with the clique logistic loss based on multithreaded TRW with five/ten iterations.
 % Other options include 'pert_ul_trw_1e5' (perturbation, univariate logistic loss, TRW, threshold of 1e-5),
 % 'em_mnf_1e5' (Surrogate Expectation-Maximization based on mean-field with a threshold of 1e-5 (simplifies to surrogate likelihood with no hidden variables),
 % or 'trunc_em_trwpll_10' (Truncated surrogate EM based on multithreaded TRW with 10 iterations).
-loss_spec = 'trunc_cl_trw_5'; % parameter learning and inference
+loss_spec = 'trunc_cl_trwpll_10'; % 'trunc_cl_trw_5'  parameter learning and inference
 
 % some parameters for the training optimization
 crf_type  = 'linear_linear'; 
 options.derivative_check = 'off';
 % options.viz         = @viz; % function for visualization
 options.rho         = rho;
-options.print_times = 1;
+options.print_times = 1; % since this is so slow, print stuff to screen
 options.nvals       = nvals;
+
+options.gradual     = 1; % use gradual fitting
+options.maxiter     = 3000;
+options.rho         = rho;
+options.reg         = 1e-4;
+options.opt_display = 0;
 
 % figure('Name','Training...','NumberTitle','off');
 
 % we actually optimize
-% This prints a visualization while running , using the viz function above.
+% This prints a visualization while running , using the viz function above, if enabled.
 p = train_crf(feats_train,efeats_train,labels_train,models_train,loss_spec,crf_type,options);
 
 % if using the entire set to train
