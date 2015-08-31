@@ -7,12 +7,12 @@ imgangle = rgb2gray(A);
 
 % load as data
 angdir = [ path_name ];
-ang_names = dir([angdir '*0.1.png.dat']); %% the dat file is built up row_wise
+ang_names = dir([angdir '*0.1_A.png.dat']); %% the dat file is built up row_wise
 ang = importdata([angdir ang_names.name]);
 ang_img = imcomplement(reshape(ang, size(imgangle,2),size(imgangle,1)));
 ang_img = ang_img';
 figure('Name','Loading angleWRTroadsInVicinity load from dat file...','NumberTitle','off'); imshow(ang_img);
-imwrite(ang_img,'./Dataset/europaData/entire_log_new/res10/train/01_mapImage0.1_A.png', 'png');
+imwrite(ang_img,'./Dataset/europaData/entire_log_new/res10/train/01_mapImage0.1_AREAL.png', 'png');
 
 
 %% load the data and computing labels and features map
@@ -234,9 +234,9 @@ for n=1:N
     pca_hor = reshape(using_feats{n}(:,5),ly,lx);
 %     pca_ver = reshape(using_feats{n}(:,6),ly,lx);
     figure('Name', 'Features used'), 
-    subplot(2,3,1), subimage(mat2gray(feat1)), title('feat1_gradient')
-    subplot(2,3,2), subimage(mat2gray(feat2)), title('feat2_steps')
-    subplot(2,3,3), subimage(mat2gray(feat3)), title('feat3_angles')
+    subplot(2,3,1), subimage(mat2gray(feat1)), title('feat1 gradient')
+    subplot(2,3,2), subimage(mat2gray(feat2)), title('feat2 steps')
+    subplot(2,3,3), subimage(mat2gray(feat3)), title('feat3 angles')
 
     subplot(2,3,4), subimage(mat2gray(dist_map)), title('Distance map'), % hold on, imcontour(dist_map);
     subplot(2,3,5), subimage(mat2gray(pca_hor)), title('First pca component')
@@ -296,7 +296,7 @@ for n=1:length(feats_test)
     
     % max value (taking the corresponding index-->class)
     [~,label_pred] = max(b_i,[],1);
-    ratio_confidence = 0.375;
+    ratio_confidence = 0.38;
     for b = 1:size(label_pred,2)
         if(label_pred(b)~=1 && label_pred(b)~=4)
             b_i_ratio = b_i(3,b)/b_i(2,b); % ratio between sidewalk belief and street belief
