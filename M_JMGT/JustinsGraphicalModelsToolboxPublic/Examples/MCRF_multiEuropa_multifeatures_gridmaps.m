@@ -16,15 +16,15 @@ imwrite(ang_img,'./Dataset/europaData/entire_log_new/res10/train/01_mapImage0.1_
 
 
 %% load the data and computing labels and features map
-imdir = [ path_name 'train/portion/new/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
+imdir = [ path_name 'train/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
 im_names = dir([imdir '*0.1.png']);
-imstepdir = [ path_name 'train/portion/new/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
+imstepdir = [ path_name 'train/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
 imstep_names = dir([imstepdir '*0.1_step.png']);
-imweightdir = [ path_name 'train/portion/new/']; % Loading the weights images correspondent to the original features
+imweightdir = [ path_name 'train/']; % Loading the weights images correspondent to the original features
 imweight_names = dir([imweightdir '*0.1_W.png']);
-imangledir = [ path_name 'train/portion/new/']; % Loading the weights images correspondent to the original features
-imangle_names = dir([imangledir '*0.1_A.png']);
-labdir = [ path_name 'labels/portion/new/']; % same name for entire_log_new or portion
+% imangledir = [ path_name 'train/']; % Loading the weights images correspondent to the original features
+% imangle_names = dir([imangledir '*0.1_A.png']);
+labdir = [ path_name 'labels/']; % same name for entire_log_new or portion
 lab_names = dir([labdir '*multi4AREA_GT.png']);
 
 % parameters of the problem
@@ -51,27 +51,27 @@ for n=1:N
     I = double(imread(([imdir im_names(n).name])))/255;    
     img = rgb2gray(I);
     ims{n}  = img; % input images, first feature (heightGradientChange)
-%     figure('Name','Loading input feature 1 [heightGradientChange]...','NumberTitle','off'); imshow(ims{n});
+    figure('Name','Loading input feature 1 [heightGradientChange]...','NumberTitle','off'); imshow(ims{n});
     Istep = double(imread(([imstepdir imstep_names(n).name])))/255;    
     imgstep = rgb2gray(Istep);
     ims2{n}  = imgstep; % input images, second feature (stepHeightInVicinity)
-%     figure('Name','Loading input feature 2 [stepHeightInVicinity]...','NumberTitle','off'); imshow(ims2{n});
+    figure('Name','Loading input feature 2 [stepHeightInVicinity]...','NumberTitle','off'); imshow(ims2{n});
     % load angles
-    A = double(imread(([imangledir imangle_names(n).name])))/255;
+%     A = double(imread(([imangledir imangle_names(n).name])))/255;
 %     imgangle = rgb2gray(A);
-    ims3{n}  = A; % input images, third feature (angle wrt roads in vicinity)
+%     ims3{n}  = A; % input images, third feature (angle wrt roads in vicinity)
 %     figure('Name','Loading input feature 3 [angleWRTroadsInVicinity]...','NumberTitle','off'); imshow(ims3{n});
 
     % load weights
     W = double(imread(([imweightdir imweight_names(n).name])))/255;
     wimg = rgb2gray(W);
     wimgs{n}  = wimg; % weights images to be used as filter or unary features
-%     figure('Name','Loading weights...','NumberTitle','off'); imshow(wimgs{n});
+    figure('Name','Loading weights...','NumberTitle','off'); imshow(wimgs{n});
 
     % load labels
     L = double(imread(([labdir lab_names(n).name])))/255;
     labelsRGB{n}  = L; % true label GT
-%     figure('Name','Loading label RGB...','NumberTitle','off'); imshow(labelsRGB{n});
+    figure('Name','Loading label RGB...','NumberTitle','off'); imshow(labelsRGB{n});
     
 end
 
@@ -81,9 +81,9 @@ for n=1:N
     fprintf('new image\n');
     % reduce resolution for speed (mostly in case we use the different GRIDMAPS images)
     % DO NOT REDUCE when using small portion of the entire log if it's 0.5
-    ims{n}  = imresize(ims{n},rez,'bilinear');
-    ims2{n} = imresize(ims2{n},rez,'bilinear');
-    ims3{n} = imresize(ims3{n},rez,'bilinear');
+    ims{n}  = imresize(ims{n},rez,'bilinear'); % heighGradientChange feature
+    ims2{n} = imresize(ims2{n},rez,'bilinear'); % stepHeighInVicinity feature
+%     ims3{n} = imresize(ims3{n},rez,'bilinear'); % angles features
 
     wimgs{n} = imresize(wimgs{n},rez,'bilinear');
 
@@ -106,8 +106,8 @@ for n=1:N
             end
         end
     end
-%     figure('Name','Loading label...');
-%     colormap(cmap); miximshow(reshape(l,ly,lx),nvals);
+    figure('Name','Loading label...');
+    colormap(cmap); miximshow(reshape(l,ly,lx),nvals);
     labels0{n} = l;
     % DO NOT REDUCE when using small portion of the entire log if it's 0.5
     labels{n} = imresize(labels0{n},rez,'nearest');
@@ -128,7 +128,7 @@ for n=1:N
     D_euclidean_compl = D_euclidean_compl(:)/norm(D_euclidean_compl(:));
 %     D_euclidean_signed = D_euclidean_signed(:)/norm(D_euclidean_signed(:));
 
-    feats{n}  = [ims{n}(:) ims2{n}(:) ims3{n}(:) D_euclidean_signed(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; %D_euclidean_compl(:)
+    feats{n}  = [ims{n}(:) ims2{n}(:) D_euclidean_signed(:) hor_efeats_ij(:) ver_efeats_ij(:) 1+0*labels{n}(:)]; % ims3{n}(:) D_euclidean_compl(:)
     fprintf('features computed\n');    
 end
     fprintf('end dataset\n');
@@ -141,7 +141,7 @@ end
 %   model_hash = repmat({[]},1000,1150);
 
 % smaller model_hash in case of small portion of entire_log_new
-model_hash = repmat({[]},500,500);
+model_hash = repmat({[]},400,400);
 
 fprintf('building models...\n')
 for n=1:N
@@ -184,7 +184,7 @@ K = N;
 % decide which features to use for the training
 using_feats = cell(1,N);
 for n=1:N
-    using_feats{n} = feats{n}(:,1:5);
+    using_feats{n} = feats{n}(:,1:4);
 end
 
 ims_train     = ims(who_train);
@@ -228,15 +228,15 @@ for n=1:N
     [ly lx] = size(labels{n});
     feat1 = reshape(using_feats{n}(:,1),ly,lx);
     feat2 = reshape(using_feats{n}(:,2),ly,lx);
-    feat3 = reshape(using_feats{n}(:,3),ly,lx);
-    dist_map = reshape(using_feats{n}(:,4),ly,lx);
+%     feat3 = reshape(using_feats{n}(:,3),ly,lx);
+    dist_map = reshape(using_feats{n}(:,3),ly,lx);
 %     dist_map = dist_map(:)/norm(dist_map(:));
-    pca_hor = reshape(using_feats{n}(:,5),ly,lx);
-%     pca_ver = reshape(using_feats{n}(:,6),ly,lx);
+    pca_hor = reshape(using_feats{n}(:,4),ly,lx);
+%     pca_ver = reshape(using_feats{n}(:,5),ly,lx);
     figure('Name', 'Features used'), 
     subplot(2,3,1), subimage(mat2gray(feat1)), title('feat1 gradient')
     subplot(2,3,2), subimage(mat2gray(feat2)), title('feat2 steps')
-    subplot(2,3,3), subimage(mat2gray(feat3)), title('feat3 angles')
+%     subplot(2,3,3), subimage(mat2gray(feat3)), title('feat3 angles')
 
     subplot(2,3,4), subimage(mat2gray(dist_map)), title('Distance map'), % hold on, imcontour(dist_map);
     subplot(2,3,5), subimage(mat2gray(pca_hor)), title('First pca component')

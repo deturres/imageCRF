@@ -9,8 +9,8 @@ clear all
 % path_name = './Dataset/europaData/gridmaps/old_features/';
 
 % NEW FEATURES
-path_name = './Dataset/europaData/entire_log_new/res10/';
-% path_name = './Dataset/europaData/gridmaps/new_features/'; TO BE DONE
+% path_name = './Dataset/europaData/entire_log_new/res10/';
+path_name = './Dataset/europaData/entire_log_new/res10_gridmap/';
 
 % when using BINARY segmentation with fake images(for training, testing on the very same one, just to plot the results at the end)
 % MCRF_binarydenoising(path_name);
@@ -26,7 +26,10 @@ path_name = './Dataset/europaData/entire_log_new/res10/';
 % MCRF_multiEuropa(path_name); 
 
 % when using MULTI segmentation with MULTI FEATURES FROM SIDEWALKDETECTOR with two or more training examples and different testing dataset(entire log new[entire image or small portion/just curb&co or area(4CLASSES)])
-MCRF_multiEuropa_multifeatures(path_name); 
+% MCRF_multiEuropa_multifeatures(path_name);% when using MULTI segmentation with MULTI FEATURES FROM SIDEWALKDETECTOR with two or more training examples and different testing dataset(entire log new[entire image or small portion/just curb&co or area(4CLASSES)])
+
+% when using MULTI segmentation with MULTI FEATURES FROM SIDEWALKDETECTOR with two or more training examples and different testing dataset(entire log new[gridmap from code, import with .dat files, area(4CLASSES)])
+MCRF_multiEuropa_multifeatures_gridmaps(path_name); 
 %% 
 % clc
 % clear all
