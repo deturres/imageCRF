@@ -1,6 +1,6 @@
 function MCRF_multiEuropa_multifeatures_gridmaps(path_name)
 
-%% just temporarly done to save the correct angles features
+%% just temporarly done to save the features from dat file
 A = double(imread(('./Dataset/europaData/entire_log_new/res10_gridmap_area/01_mapImage0.1tot.png')))/255.; %_AfromCode
 imgtot = rgb2gray(A);
 figure('Name','Loading features tot...','NumberTitle','off'); imshow(A);
