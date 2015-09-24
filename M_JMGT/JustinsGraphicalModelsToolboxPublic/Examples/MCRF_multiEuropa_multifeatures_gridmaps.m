@@ -1,19 +1,18 @@
 function MCRF_multiEuropa_multifeatures_gridmaps(path_name)
 
 %% just temporarly done to save the correct angles features
-A = double(imread(('./Dataset/europaData/entire_log_new/res10/01_mapImage0.1_AfromCode.png')))/255;
-imgangle = rgb2gray(A);
-% figure('Name','Loading angleWRTroadsInVicinity...','NumberTitle','off'); imshow(imgangle);
+A = double(imread(('./Dataset/europaData/entire_log_new/res10_gridmap_area/01_mapImage0.1tot.png')))/255.; %_AfromCode
+imgtot = rgb2gray(A);
+figure('Name','Loading features tot...','NumberTitle','off'); imshow(A);
 
 % load as data
-angdir = [ path_name ];
-ang_names = dir([angdir '*0.1_A.png.dat']); %% the dat file is built up row_wise
-ang = importdata([angdir ang_names.name]);
-ang_img = imcomplement(reshape(ang, size(imgangle,2),size(imgangle,1)));
-ang_img = ang_img';
-figure('Name','Loading angleWRTroadsInVicinity load from dat file...','NumberTitle','off'); imshow(ang_img);
-imwrite(ang_img,'./Dataset/europaData/entire_log_new/res10/train/01_mapImage0.1_AREAL.png', 'png');
-
+imgtotdir = [ path_name ];
+imgtot_names = dir([imgtotdir '*0.1tot.png.dat']); %% the dat file is built up row_wise
+tot = importdata([imgtotdir imgtot_names.name]);
+tot_img = imcomplement(reshape(tot, size(imgtot,2),size(imgtot,1)));
+tot_img = tot_img';
+figure('Name','Loading features tot from dat file...','NumberTitle','off'); imshow(tot_img);
+imwrite(tot_img,'./Dataset/europaData/entire_log_new/res10_gridmap_area/train/01_mapImage0.1_REAL.png', 'png');
 
 %% load the data and computing labels and features map
 imdir = [ path_name 'train/']; % Valid for entire log new dataset(inside trains) or portion(inside trains/portion)
@@ -110,7 +109,7 @@ for n=1:N
     colormap(cmap); miximshow(reshape(l,ly,lx),nvals);
     labels0{n} = l;
     % DO NOT REDUCE when using small portion of the entire log if it's 0.5
-    labels{n} = imresize(labels0{n},rez,'nearest');
+    labels{n} = imresize(labels0{n},rez,'bilinear');
 %     labels{n} = labels0{n};
     fprintf('label computed\n');
 end
