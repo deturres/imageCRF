@@ -7,7 +7,7 @@ imgangle = rgb2gray(A);
 
 % load as data
 angdir = [ path_name ];
-ang_names = dir([angdir '*0.1_A.png.dat']); %% the dat file is built up row_wise
+ang_names = dir([angdir '*0.1.png.dat']); %% the dat file is built up row_wise
 ang = importdata([angdir ang_names.name]);
 ang_img = imcomplement(reshape(ang, size(imgangle,2),size(imgangle,1)));
 ang_img = ang_img';
